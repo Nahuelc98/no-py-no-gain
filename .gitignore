@@ -1,0 +1,11 @@
+# Ignorar archivo de claves y credenciales
+claves_nopy.py
+clave*
+
+# Archivos de caché de Python y entornos virtuales comunes
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
