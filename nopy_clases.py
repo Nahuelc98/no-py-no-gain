@@ -20,12 +20,12 @@ class Usuario:
 
 class Ejercicio:
     """Clase que representa un ejercicio del catálogo con su tipo y grupo muscular."""
-    def __init__(self, id_ejercicio, nombre, grupo_muscular, tipo_ejercicio, descripcion=""):
+    def __init__(self, id_ejercicio, nombre, grupo_muscular, tipo_ejercicio, dni_usuario=None):
         self.id_ejercicio = id_ejercicio
+        self.dni_usuario = dni_usuario
         self.nombre = nombre
         self.grupo_muscular = grupo_muscular
         self.tipo_ejercicio = tipo_ejercicio
-        self.descripcion = descripcion
 
     def __str__(self):
         return f"{self.nombre} [{self.grupo_muscular} - {self.tipo_ejercicio}]"
@@ -45,12 +45,11 @@ class Rutina:
 
 class RegistroEntrenamiento:
     """Clase para modelar el rendimiento y sobrecarga progresiva en cada serie."""
-    def __init__(self, id_registro, dni_usuario, id_ejercicio, fecha, asistio, serie_numero, peso_kg, repeticiones):
+    def __init__(self, id_registro, dni_usuario, id_ejercicio, fecha, serie_numero, peso_kg, repeticiones):
         self.id_registro = id_registro
         self.dni_usuario = dni_usuario
         self.id_ejercicio = id_ejercicio
         self.fecha = fecha
-        self.asistio = asistio
         self.serie_numero = serie_numero
         self.peso_kg = peso_kg
         self.repeticiones = repeticiones

@@ -44,19 +44,24 @@ def analizar_rendimiento_usuario(registros_entrenamiento, nombre_usuario="Atleta
     Mantén un tono profesional, claro y directo.
     """
 
-    # Solicitud al modelo de Gemini
-    response = client.models.generate_content(
-        model="gemini-2.5-flash", 
-        contents=prompt
-    )
-    
-    print(response.text)
+    try:
+        # Solicitud al modelo de Gemini
+        response = client.models.generate_content(
+            model="gemini-2.5-flash", 
+            contents=prompt
+        )
+        
+        print(response.text)
 
-    # Escribimos la respuesta de la IA en un archivo .txt local
-    respuesta = str(response.text)
-    nombre_archivo = f"analisis_{nombre_usuario.lower().replace(' ', '_')}.txt"
-    with open(nombre_archivo, "w", encoding="utf-8") as archivo_txt:
-        archivo_txt.write(respuesta)
-    
-    print(f"\n✔ Análisis guardado exitosamente en '{nombre_archivo}'.")
-    return respuesta
+        # Escribimos la respuesta de la IA en un archivo .txt local
+        respuesta = str(response.text)
+        nombre_archivo = f"analisis_{nombre_usuario.lower().replace(' ', '_')}.txt"
+        with open(nombre_archivo, "w", encoding="utf-8") as archivo_txt:
+            archivo_txt.write(respuesta)
+        
+        print(f"\n[OK] Análisis guardado exitosamente en '{nombre_archivo}'.")
+        return respuesta
+    except Exception as e:
+        error_msg = f"[!] No se pudo conectar con la Inteligencia Artificial.\nDetalle: {e}"
+        print(error_msg)
+        return error_msg

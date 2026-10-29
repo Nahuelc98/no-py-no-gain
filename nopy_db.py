@@ -4,6 +4,7 @@ Maneja la conexión a MySQL y todas las consultas CRUD del sistema.
 """
 
 import os
+from datetime import datetime
 import mysql.connector
 from mysql.connector import Error
 
@@ -18,30 +19,30 @@ def pedir_conexion(host, user, password, database="nopy_nogain", port=3306):
             port=port
         )
         if conexion.is_connected():
-            print("✔ Conexión exitosa a la Base de Datos MySQL.")
+            print("[OK] Conexión exitosa a la Base de Datos MySQL.")
             return conexion
     except Error as e:
-        print(f"❌ Error al conectar a la Base de Datos: {e}")
+        print(f"[X] Error al conectar a la Base de Datos: {e}")
         return None
 
-def obtener_ruta_txt(filename="nopy_ejercicios.txt"):
+def obtener_ruta_txt(filename="accion_usuario.txt"):
     """Devuelve la ruta absoluta para asegurar que el txt se cree en la carpeta del proyecto."""
     dir_actual = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(dir_actual, filename)
 
-# # FUNCIÓN ESCRIBIR EN ARCHIVO:
+# # FUNCIÓN ESCRIBIR EN ARCHIVO (Modo append 'a'):
 def escribir_archivo(nombre_archivo, texto):
     archivo = open(nombre_archivo, "a", encoding="utf-8")
     archivo.write(texto)
     archivo.close()
 
-# # FUNCIÓN REESCRIBIR ARCHIVO:
+# # FUNCIÓN REESCRIBIR ARCHIVO (Modo write 'w'):
 def reescribir_archivo(nombre_archivo, lineas):
     archivo = open(nombre_archivo, "w", encoding="utf-8")
     archivo.writelines(lineas)
     archivo.close()
 
-# # FUNCIÓN LEER ARCHIVO:
+# # FUNCIÓN LEER ARCHIVO (Modo read 'r'):
 def leer_archivo(nombre_archivo):
     if not os.path.exists(nombre_archivo):
         return []
@@ -49,6 +50,17 @@ def leer_archivo(nombre_archivo):
     contenido = archivo.readlines()
     archivo.close()
     return contenido
+
+# FUNCIÓN PARA REGISTRAR EN EL LOG LAS ACCIONES DEL USUARIO
+def registrar_accion_usuario(accion, dni="Sin DNI", nombre="Invitado"):
+    """Guarda en 'accion_usuario.txt' la acción realizada por el usuario con fecha y hora exacta."""
+    try:
+        ruta = obtener_ruta_txt("accion_usuario.txt")
+        ahora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+        linea = f"[{ahora}] | ACCIÓN: {accion} | DNI: {dni} | Usuario: {nombre}\n"
+        escribir_archivo(ruta, linea)
+    except Exception as e:
+        print(f"Error al registrar accion en txt: {e}")
 
 def buscar_usuario_db(conexion, dni):
     """Busca un usuario por su DNI para el login."""
@@ -89,51 +101,47 @@ def actualizar_usuario_db(conexion, dni, nombre, apellido, peso, altura, sexo):
         print(f"Error al actualizar usuario: {e}")
         return False
 
-def obtener_ejercicios_por_grupo(conexion, grupo="Todos", filename="nopy_ejercicios.txt"):
-    """Devuelve los ejercicios filtrados por grupo muscular."""
-    path = obtener_ruta_txt(filename)
+def obtener_ejercicios_por_grupo(conexion, grupo="Todos", dni_usuario=None):
+    """Devuelve los ejercicios globales (dni_usuario IS NULL) y los propios del usuario."""
     try:
-        if conexion:
-            cursor = conexion.cursor()
-            sql = "SELECT id_ejercicio, nombre, grupo_muscular, tipo_ejercicio, descripcion FROM ejercicios"
-            cursor.execute(sql)
-            resultados = cursor.fetchall()
-            cursor.close()
-            
-            lineas = []
-            for ej in resultados:
-                lineas.append(f"{ej[0]}|{ej[1]}|{ej[2]}|{ej[3]}|{ej[4]}\n")
-            reescribir_archivo(path, lineas)
-    except Exception as e:
-        print(f"Error al sincronizar txt desde BD: {e}")
+        if not conexion:
+            return []
+        cursor = conexion.cursor()
+        if grupo == "Todos":
+            sql = """
+                SELECT id_ejercicio, nombre, grupo_muscular, tipo_ejercicio 
+                FROM ejercicios 
+                WHERE dni_usuario IS NULL OR dni_usuario = %s
+                ORDER BY id_ejercicio
+            """
+            cursor.execute(sql, (dni_usuario,))
+        else:
+            sql = """
+                SELECT id_ejercicio, nombre, grupo_muscular, tipo_ejercicio 
+                FROM ejercicios 
+                WHERE (dni_usuario IS NULL OR dni_usuario = %s) AND LOWER(grupo_muscular) = LOWER(%s)
+                ORDER BY id_ejercicio
+            """
+            cursor.execute(sql, (dni_usuario, grupo))
+        
+        resultados = cursor.fetchall()
+        cursor.close()
+        return resultados
+    except Error as e:
+        print(f"Error al obtener ejercicios desde BD: {e}")
+        return []
 
-    ejercicios = []
-    lineas_txt = leer_archivo(path)
-    for linea in lineas_txt:
-        parts = linea.strip().split("|")
-        if len(parts) >= 4:
-            id_ej = int(parts[0])
-            nombre = parts[1]
-            grupo_musc = parts[2]
-            tipo = parts[3]
-            desc = parts[4] if len(parts) > 4 else ""
-            if grupo == "Todos" or grupo_musc.strip().lower() == grupo.strip().lower():
-                ejercicios.append((id_ej, nombre, grupo_musc, tipo, desc))
-    return ejercicios
-
-def agregar_ejercicio_db(conexion, nombre, grupo_muscular, tipo_ejercicio, descripcion=""):
-    """Agrega un nuevo ejercicio personalizado al catálogo."""
-    path = obtener_ruta_txt("nopy_ejercicios.txt")
+def agregar_ejercicio_db(conexion, dni_usuario, nombre, grupo_muscular, tipo_ejercicio):
+    """Agrega un nuevo ejercicio personalizado para el usuario actual."""
     try:
         cursor = conexion.cursor()
-        sql = "INSERT INTO ejercicios (nombre, grupo_muscular, tipo_ejercicio, descripcion) VALUES (%s, %s, %s, %s)"
-        cursor.execute(sql, (nombre, grupo_muscular, tipo_ejercicio, descripcion))
+        sql = "INSERT INTO ejercicios (dni_usuario, nombre, grupo_muscular, tipo_ejercicio) VALUES (%s, %s, %s, %s)"
+        cursor.execute(sql, (dni_usuario, nombre, grupo_muscular, tipo_ejercicio))
         conexion.commit()
-        id_ej = cursor.lastrowid
         cursor.close()
         
-        nueva_linea = f"{id_ej}|{nombre}|{grupo_muscular}|{tipo_ejercicio}|{descripcion}\n"
-        escribir_archivo(path, nueva_linea)
+        # Guardamos la acción en el archivo de texto accion_usuario.txt
+        registrar_accion_usuario(f"Creó nuevo ejercicio: '{nombre}' ({grupo_muscular})", dni=dni_usuario)
         return True
     except Error as e:
         print(f"Error al agregar ejercicio: {e}")
@@ -188,7 +196,7 @@ def eliminar_rutina_db(conexion, id_rutina):
         return True
     except Error as e:
         print(f"Error al eliminar rutina: {e}")
-        return []
+        return False
 
 def obtener_dias_de_rutina(conexion, id_rutina):
     """Obtiene los días y grupos musculares asociados a una rutina."""
@@ -203,15 +211,15 @@ def obtener_dias_de_rutina(conexion, id_rutina):
         print(f"Error al obtener días de la rutina: {e}")
         return []
 
-def registrar_serie_entrenamiento_db(conexion, dni_usuario, id_ejercicio, fecha, asistio, serie_numero, peso_kg, repeticiones):
-    """Registra el desempeño de una serie específica en el entrenamiento."""
+def registrar_serie_entrenamiento_db(conexion, dni_usuario, id_ejercicio, fecha, serie_numero, peso_kg, repeticiones):
+    """Registra el desempeño de una serie específica en el entrenamiento (asistencia implícita)."""
     try:
         cursor = conexion.cursor()
         sql = """
-            INSERT INTO registros_entrenamiento (dni_usuario, id_ejercicio, fecha, asistio, serie_numero, peso_kg, repeticiones)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO registros_entrenamiento (dni_usuario, id_ejercicio, fecha, serie_numero, peso_kg, repeticiones)
+            VALUES (%s, %s, %s, %s, %s, %s)
         """
-        cursor.execute(sql, (dni_usuario, id_ejercicio, fecha, asistio, serie_numero, peso_kg, repeticiones))
+        cursor.execute(sql, (dni_usuario, id_ejercicio, fecha, serie_numero, peso_kg, repeticiones))
         conexion.commit()
         cursor.close()
         return True
@@ -237,3 +245,107 @@ def obtener_seguimiento_usuario_db(conexion, dni_usuario):
     except Error as e:
         print(f"Error al obtener seguimiento: {e}")
         return []
+
+# FUNCIÓN PARA TRAER LOS EJERCICIOS QUE PERTENECEN A UN DÍA DE ENTRENAMIENTO
+def obtener_ejercicios_de_dia(conexion, id_rutina_dia):
+    """Devuelve la lista de ejercicios y series configurados para un día de la rutina."""
+    try:
+        cursor = conexion.cursor()
+        # Unimos con JOIN para obtener el nombre del ejercicio y las series programadas
+        sql = """
+            SELECT e.id_ejercicio, e.nombre, e.grupo_muscular, re.cantidad_series
+            FROM rutina_ejercicios re
+            JOIN ejercicios e ON re.id_ejercicio = e.id_ejercicio
+            WHERE re.id_rutina_dia = %s
+        """
+        cursor.execute(sql, (id_rutina_dia,))
+        resultado = cursor.fetchall()
+        cursor.close()
+        return resultado
+    except Error as e:
+        print(f"Error al obtener ejercicios del día: {e}")
+        return []
+
+# FUNCIÓN PARA OBTENER TODOS LOS DATOS DE UNA RUTINA (PARA PODER EDITARLA)
+def obtener_detalle_rutina(conexion, id_rutina):
+    """Devuelve el nombre de la rutina y la lista de sus días con sus ejercicios."""
+    try:
+        cursor = conexion.cursor()
+        # 1. Buscamos el nombre y cantidad de días de la rutina
+        cursor.execute("SELECT nombre_rutina, cantidad_dias FROM rutinas WHERE id_rutina = %s", (id_rutina,))
+        rutina_info = cursor.fetchone()
+        if not rutina_info:
+            cursor.close()
+            return None
+
+        # 2. Buscamos los días asignados a esa rutina
+        cursor.execute("SELECT id_rutina_dia, numero_dia, grupo_muscular FROM rutina_dias WHERE id_rutina = %s ORDER BY numero_dia", (id_rutina,))
+        dias = cursor.fetchall()
+
+        estructura_dias = []
+        for dia in dias:
+            id_dia, num_dia, grupo = dia
+            # 3. Buscamos los ejercicios de cada día
+            sql_ej = """
+                SELECT e.id_ejercicio, e.nombre, e.grupo_muscular, re.cantidad_series
+                FROM rutina_ejercicios re
+                JOIN ejercicios e ON re.id_ejercicio = e.id_ejercicio
+                WHERE re.id_rutina_dia = %s
+            """
+            cursor.execute(sql_ej, (id_dia,))
+            ejercicios_raw = cursor.fetchall()
+
+            lista_ejercicios = []
+            for ej in ejercicios_raw:
+                lista_ejercicios.append({
+                    'id': ej[0],
+                    'nombre': ej[1],
+                    'grupo': ej[2],
+                    'series': ej[3]
+                })
+
+            estructura_dias.append({
+                'numero_dia': num_dia,
+                'grupo': grupo,
+                'ejercicios': lista_ejercicios
+            })
+
+        cursor.close()
+        return {
+            'nombre_rutina': rutina_info[0],
+            'cantidad_dias': rutina_info[1],
+            'dias': estructura_dias
+        }
+    except Error as e:
+        print(f"Error al obtener detalle de la rutina: {e}")
+        return None
+
+# FUNCIÓN PARA ACTUALIZAR UNA RUTINA EXISTENTE (EDITAR RUTINA)
+def actualizar_rutina_completa_db(conexion, id_rutina, nombre_rutina, estructura_dias):
+    """Actualiza el nombre, los días y los ejercicios de una rutina ya creada."""
+    try:
+        cursor = conexion.cursor()
+        # 1. Actualizamos el nombre y la cantidad de días en la tabla rutinas
+        sql_update = "UPDATE rutinas SET nombre_rutina = %s, cantidad_dias = %s WHERE id_rutina = %s"
+        cursor.execute(sql_update, (nombre_rutina, len(estructura_dias), id_rutina))
+
+        # 2. Borramos los días anteriores (por el ON DELETE CASCADE se borran también los ejercicios viejos)
+        cursor.execute("DELETE FROM rutina_dias WHERE id_rutina = %s", (id_rutina,))
+
+        # 3. Insertamos la nueva distribución de días y ejercicios
+        for dia in estructura_dias:
+            sql_dia = "INSERT INTO rutina_dias (id_rutina, numero_dia, grupo_muscular) VALUES (%s, %s, %s)"
+            cursor.execute(sql_dia, (id_rutina, dia['numero_dia'], dia['grupo']))
+            id_rutina_dia = cursor.lastrowid
+
+            for ej in dia['ejercicios']:
+                sql_ej = "INSERT INTO rutina_ejercicios (id_rutina_dia, id_ejercicio, cantidad_series) VALUES (%s, %s, %s)"
+                cursor.execute(sql_ej, (id_rutina_dia, ej['id'], ej['series']))
+
+        conexion.commit()
+        cursor.close()
+        return True
+    except Error as e:
+        conexion.rollback()
+        print(f"Error al actualizar la rutina: {e}")
+        return False
