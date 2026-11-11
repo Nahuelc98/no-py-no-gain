@@ -17,6 +17,25 @@ class Usuario:
     def __str__(self):
         return f"{self.nombre} {self.apellido} (DNI: {self.dni})"
 
+    def nombre_completo(self):
+        """Devuelve el nombre y apellido juntos (se usa en la bienvenida, el txt y la IA)."""
+        return f"{self.nombre} {self.apellido}"
+
+    def calcular_imc(self):
+        """Calcula el Índice de Masa Corporal (IMC = peso / altura²)."""
+        try:
+            peso = float(self.peso)
+            altura = float(self.altura)
+            # Si la altura se cargó en centímetros (ej: 175) la pasamos a metros (1.75)
+            if altura > 3:
+                altura = altura / 100
+            if altura <= 0:
+                return 0
+            return round(peso / (altura * altura), 1)
+        except (ValueError, TypeError):
+            # Si el peso o la altura no son números válidos devolvemos 0
+            return 0
+
 
 class Ejercicio:
     """Clase que representa un ejercicio del catálogo con su tipo y grupo muscular."""
@@ -56,3 +75,7 @@ class RegistroEntrenamiento:
 
     def __str__(self):
         return f"Fecha: {self.fecha} | Serie {self.serie_numero}: {self.peso_kg}kg x {self.repeticiones} reps"
+
+    def calcular_volumen(self):
+        """Calcula el volumen de la serie (peso x repeticiones)."""
+        return self.peso_kg * self.repeticiones

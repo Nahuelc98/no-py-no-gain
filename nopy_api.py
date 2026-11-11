@@ -7,6 +7,20 @@ from google import genai  # Importamos librería de gemini ia.
 # Asegúrate de crear este archivo con tu clave o importarla de donde corresponda
 from claves_nopy import API_NOPY 
 
+def limpiar_formato(texto):
+    """
+    Quita los símbolos de formato (Markdown) que devuelve la IA, como ** para negrita
+    o # para títulos, porque el cuadro de texto de la interfaz no los interpreta.
+    """
+    texto = texto.replace("**", "")
+    lineas_limpias = []
+    for linea in texto.split("\n"):
+        # Si la línea empieza con # (título), sacamos los # del principio
+        if linea.strip().startswith("#"):
+            linea = linea.strip().lstrip("#").strip()
+        lineas_limpias.append(linea)
+    return "\n".join(lineas_limpias)
+
 def analizar_rendimiento_usuario(registros_entrenamiento, nombre_usuario="Atleta"):
     """
     Envía los registros de entrenamiento a la IA para obtener un análisis completo,
@@ -54,7 +68,8 @@ def analizar_rendimiento_usuario(registros_entrenamiento, nombre_usuario="Atleta
         print(response.text)
 
         # Escribimos la respuesta de la IA en un archivo .txt local
-        respuesta = str(response.text)
+        # Limpiamos los símbolos de formato (** y #) para que se lea bien en la interfaz
+        respuesta = limpiar_formato(str(response.text))
         nombre_archivo = f"analisis_{nombre_usuario.lower().replace(' ', '_')}.txt"
         with open(nombre_archivo, "w", encoding="utf-8") as archivo_txt:
             archivo_txt.write(respuesta)
