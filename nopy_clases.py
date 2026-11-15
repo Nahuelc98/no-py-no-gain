@@ -74,7 +74,9 @@ class RegistroEntrenamiento:
         self.repeticiones = repeticiones
 
     def __str__(self):
-        return f"Fecha: {self.fecha} | Serie {self.serie_numero}: {self.peso_kg}kg x {self.repeticiones} reps"
+        # La fecha se muestra en formato dd/mm/aaaa (si es un objeto fecha)
+        fecha_texto = self.fecha.strftime("%d/%m/%Y") if hasattr(self.fecha, "strftime") else str(self.fecha)
+        return f"Fecha: {fecha_texto} | Serie {self.serie_numero}: {self.peso_kg}kg x {self.repeticiones} reps"
 
     def calcular_volumen(self):
         """Calcula el volumen de la serie (peso x repeticiones)."""

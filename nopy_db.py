@@ -324,9 +324,10 @@ def obtener_dias_de_rutina(conexion, id_rutina):
         print(f"Error al obtener días de la rutina: {e}")
         return []
 
-def registrar_serie_entrenamiento_db(conexion, dni_usuario, id_ejercicio, fecha, serie_numero, peso_kg, repeticiones):
+def registrar_serie_entrenamiento_db(conexion, dni_usuario, id_ejercicio, fecha, serie_numero, peso_kg, repeticiones, id_rutina=None, numero_dia=None):
     """
     Registra el desempeño de una serie específica en el entrenamiento (asistencia implícita).
+    También guarda qué rutina y qué día de la rutina se estaba entrenando (para comparar días iguales).
     Cada serie se puede cargar una sola vez por día: si ya existe, se REEMPLAZA con los datos nuevos.
     Devuelve "nueva" si se cargó por primera vez, "reemplazada" si se actualizó, o False si hubo un error.
     """
@@ -342,16 +343,16 @@ def registrar_serie_entrenamiento_db(conexion, dni_usuario, id_ejercicio, fecha,
 
         if existente:
             # 2a. Si ya existe, la reemplazamos (actualizamos peso y repeticiones)
-            sql = "UPDATE registros_entrenamiento SET peso_kg = %s, repeticiones = %s WHERE id_registro = %s"
-            cursor.execute(sql, (peso_kg, repeticiones, existente[0]))
+            sql = "UPDATE registros_entrenamiento SET peso_kg = %s, repeticiones = %s, id_rutina = %s, numero_dia = %s WHERE id_registro = %s"
+            cursor.execute(sql, (peso_kg, repeticiones, id_rutina, numero_dia, existente[0]))
             resultado = "reemplazada"
         else:
-            # 2b. Si no existe, la insertamos como serie nueva
+            # 2b. Si no existe, la insertamos como serie nueva (con la rutina y el día que se entrenó)
             sql = """
-                INSERT INTO registros_entrenamiento (dni_usuario, id_ejercicio, fecha, serie_numero, peso_kg, repeticiones)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                INSERT INTO registros_entrenamiento (dni_usuario, id_ejercicio, id_rutina, numero_dia, fecha, serie_numero, peso_kg, repeticiones)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             """
-            cursor.execute(sql, (dni_usuario, id_ejercicio, fecha, serie_numero, peso_kg, repeticiones))
+            cursor.execute(sql, (dni_usuario, id_ejercicio, id_rutina, numero_dia, fecha, serie_numero, peso_kg, repeticiones))
             resultado = "nueva"
 
         conexion.commit()
@@ -378,6 +379,45 @@ def obtener_series_ejercicio_fecha_db(conexion, dni_usuario, id_ejercicio, fecha
     except Error as e:
         print(f"Error al obtener series del ejercicio: {e}")
         return []
+
+def obtener_ultimo_dia_entrenado_db(conexion, dni_usuario, id_rutina):
+    """
+    Devuelve (numero_dia, fecha) del último día de la rutina que entrenó el usuario, o None si nunca la entrenó.
+    Sirve para sugerir qué día de la rutina le toca hoy.
+    """
+    try:
+        cursor = conexion.cursor()
+        # 1. Buscamos usando la rutina y el día que se guardan con cada serie (dato exacto)
+        sql_exacto = """
+            SELECT numero_dia, fecha
+            FROM registros_entrenamiento
+            WHERE dni_usuario = %s AND id_rutina = %s AND numero_dia IS NOT NULL
+            ORDER BY fecha DESC, id_registro DESC
+            LIMIT 1
+        """
+        cursor.execute(sql_exacto, (dni_usuario, id_rutina))
+        fila = cursor.fetchone()
+        if fila:
+            cursor.close()
+            return fila
+
+        # 2. Si solo hay series viejas (sin la rutina guardada), lo buscamos por los ejercicios de cada día
+        sql = """
+            SELECT rd.numero_dia, r.fecha
+            FROM registros_entrenamiento r
+            JOIN rutina_ejercicios re ON r.id_ejercicio = re.id_ejercicio
+            JOIN rutina_dias rd ON re.id_rutina_dia = rd.id_rutina_dia
+            WHERE r.dni_usuario = %s AND rd.id_rutina = %s
+            ORDER BY r.fecha DESC, r.id_registro DESC
+            LIMIT 1
+        """
+        cursor.execute(sql, (dni_usuario, id_rutina))
+        fila = cursor.fetchone()
+        cursor.close()
+        return fila
+    except Error as e:
+        print(f"Error al obtener el último día entrenado: {e}")
+        return None
 
 def obtener_ultima_fecha_ejercicio_db(conexion, dni_usuario, id_ejercicio, fecha_actual):
     """Devuelve la última fecha (anterior a hoy) en la que el usuario hizo ese ejercicio, o None."""
@@ -438,6 +478,79 @@ def obtener_fechas_entrenadas_db(conexion, dni_usuario):
     except Error as e:
         print(f"Error al obtener fechas entrenadas: {e}")
         return []
+
+def obtener_dias_rutina_por_fecha_db(conexion, dni_usuario):
+    """
+    Devuelve un diccionario {fecha: (id_rutina, numero_dia, nombre_rutina)} con la rutina y el día
+    que el usuario entrenó en cada fecha. Sirve para saber qué días se pueden comparar entre sí.
+    Las series viejas que no tienen guardada la rutina (NULL) no se tienen en cuenta.
+    Si en una misma fecha entrenó dos días distintos, se toma el que tiene más series.
+    """
+    try:
+        if not conexion:
+            return {}
+        cursor = conexion.cursor()
+        # GROUP BY agrupa las series por fecha, rutina y día; COUNT(*) cuenta cuántas series tiene cada grupo
+        sql = """
+            SELECT r.fecha, r.id_rutina, r.numero_dia, ru.nombre_rutina, COUNT(*) AS cantidad_series
+            FROM registros_entrenamiento r
+            JOIN rutinas ru ON r.id_rutina = ru.id_rutina
+            WHERE r.dni_usuario = %s AND r.id_rutina IS NOT NULL AND r.numero_dia IS NOT NULL
+            GROUP BY r.fecha, r.id_rutina, r.numero_dia, ru.nombre_rutina
+            ORDER BY r.fecha, cantidad_series DESC
+        """
+        cursor.execute(sql, (dni_usuario,))
+        filas = cursor.fetchall()
+        cursor.close()
+
+        dias_por_fecha = {}
+        for fila in filas:
+            fecha_str = fila[0].strftime("%Y-%m-%d") if hasattr(fila[0], 'strftime') else str(fila[0])
+            # Como vienen ordenados por cantidad de series, el primero de cada fecha es el que tiene más
+            if fecha_str not in dias_por_fecha:
+                dias_por_fecha[fecha_str] = (fila[1], fila[2], fila[3])
+        return dias_por_fecha
+    except Error as e:
+        print(f"Error al obtener los días de rutina por fecha: {e}")
+        return {}
+
+def obtener_grupos_por_fecha_db(conexion, dni_usuario):
+    """
+    Devuelve un diccionario {fecha: "Pecho, Tríceps"} con los grupos musculares que el usuario
+    entrenó cada día, según los ejercicios que registró (sin repetir y en el orden en que los cargó).
+    """
+    try:
+        if not conexion:
+            return {}
+        cursor = conexion.cursor()
+        sql = """
+            SELECT r.fecha, e.grupo_muscular
+            FROM registros_entrenamiento r
+            JOIN ejercicios e ON r.id_ejercicio = e.id_ejercicio
+            WHERE r.dni_usuario = %s
+            ORDER BY r.fecha, r.id_registro
+        """
+        cursor.execute(sql, (dni_usuario,))
+        filas = cursor.fetchall()
+        cursor.close()
+
+        # Primero juntamos en una lista los grupos de cada fecha (sin repetir)
+        grupos_por_fecha = {}
+        for fila in filas:
+            fecha_str = fila[0].strftime("%Y-%m-%d") if hasattr(fila[0], 'strftime') else str(fila[0])
+            if fecha_str not in grupos_por_fecha:
+                grupos_por_fecha[fecha_str] = []
+            if fila[1] not in grupos_por_fecha[fecha_str]:
+                grupos_por_fecha[fecha_str].append(fila[1])
+
+        # Después convertimos cada lista en un texto: ["Pecho", "Tríceps"] -> "Pecho, Tríceps"
+        resultado = {}
+        for fecha_str, grupos in grupos_por_fecha.items():
+            resultado[fecha_str] = ", ".join(grupos)
+        return resultado
+    except Error as e:
+        print(f"Error al obtener los grupos musculares por fecha: {e}")
+        return {}
 
 def obtener_registros_por_fecha_db(conexion, dni_usuario, fecha):
     """Devuelve los registros de entrenamiento de un usuario para una fecha específica."""

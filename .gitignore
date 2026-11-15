@@ -9,3 +9,6 @@ __pycache__/
 .venv/
 venv/
 env/
+
+# Informes generados por la IA (tienen datos de entrenamiento de cada usuario)
+analisis_*.txt

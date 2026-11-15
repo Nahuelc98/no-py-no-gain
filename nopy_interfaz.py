@@ -32,8 +32,10 @@ COLOR_NARANJA_BOTON = "#F39C12"     # Botones de edición
 COLOR_NARANJA_HOVER = "#F5B942"     # Hover del naranja (un poco más claro)
 COLOR_GRIS_BOTON = "#555555"        # Botones secundarios (cerrar ventana, cancelar)
 COLOR_GRIS_HOVER = "#777777"        # Hover del gris (un poco más claro)
-COLOR_VIOLETA_BOTON = "#8E44AD"     # Fecha 2 en el calendario de Ver Seguimiento
+COLOR_VIOLETA_BOTON = "#8E44AD"     # Color violeta (disponible para botones)
 COLOR_VIOLETA_HOVER = "#A569BD"     # Hover del violeta (un poco más claro)
+COLOR_AMARILLO_OSCURO = "#8A7419"   # Días comparables con la Fecha 1 en el calendario de Ver Seguimiento
+COLOR_AMARILLO_OSCURO_HOVER = "#A88E22"  # Hover del amarillo oscuro (un poco más claro)
 
 def habilitar_scroll_fluido(ventana, scrollable_frame):
     """
@@ -83,6 +85,37 @@ def habilitar_scroll_fluido(ventana, scrollable_frame):
     ventana.after(150, lambda: _vincular_recursivo(scrollable_frame))
 
 
+def solo_lectura(cuadro):
+    """
+    Hace que un cuadro de texto (CTkTextbox) no se pueda modificar con el teclado:
+    el usuario puede seleccionar y copiar el texto (Ctrl+C) y moverse con las flechas,
+    pero no puede escribir, borrar, cortar ni pegar.
+    La aplicación sí puede seguir escribiendo en el cuadro con insert() y delete().
+    """
+    def bloquear_tecla(evento):
+        teclas_permitidas = ["Left", "Right", "Up", "Down", "Home", "End", "Prior", "Next"]
+        # evento.state & 4 indica que la tecla Control está apretada (Ctrl+C = copiar)
+        es_copiar = (evento.state & 4) and evento.keysym.lower() == "c"
+        if es_copiar or evento.keysym in teclas_permitidas:
+            return None
+        # "break" corta el evento: la tecla no llega a modificar el texto
+        return "break"
+
+    cuadro.bind("<Key>", bloquear_tecla)
+    # También bloqueamos pegar y cortar (por ejemplo, con el menú o atajos del sistema)
+    cuadro.bind("<<Paste>>", lambda evento: "break")
+    cuadro.bind("<<Cut>>", lambda evento: "break")
+
+
+def formato_fecha(fecha_str):
+    """
+    Convierte una fecha del formato de la base de datos "AAAA-MM-DD" al formato "DD/MM/AAAA".
+    Ej: "2026-11-09" -> "09/11/2026" (cortamos el texto: año = [0:4], mes = [5:7], día = [8:10]).
+    """
+    fecha_str = str(fecha_str)
+    return f"{fecha_str[8:10]}/{fecha_str[5:7]}/{fecha_str[0:4]}"
+
+
 def texto_unico(texto, diccionario):
     """
     Las listas desplegables muestran solo nombres (sin IDs). Si un nombre ya está en el
@@ -98,14 +131,14 @@ def texto_unico(texto, diccionario):
 
 def crear_encabezado(contenedor, titulo, comando_volver, tamaño_letra=20, pady=10):
     """
-    Crea el encabezado de una sección: el botón '< Volver' en la esquina superior izquierda
+    Crea el encabezado de una sección: el botón '◀ Volver' en la esquina superior izquierda
     y el título de la sección a su derecha (centrado).
     """
     frame_encabezado = ctk.CTkFrame(contenedor, fg_color="transparent")
     frame_encabezado.pack(fill="x", pady=pady)
 
     # Botón para volver al menú principal (a la izquierda del título)
-    ctk.CTkButton(frame_encabezado, text="< Volver", command=comando_volver, width=75, fg_color=COLOR_GRIS_BOTON, hover_color=COLOR_GRIS_HOVER).pack(side="left", padx=5)
+    ctk.CTkButton(frame_encabezado, text="◀ Volver", command=comando_volver, width=75, fg_color=COLOR_GRIS_BOTON, hover_color=COLOR_GRIS_HOVER).pack(side="left", padx=5)
 
     # Espacio vacío del mismo ancho que el botón (a la derecha) para que el título quede centrado
     ctk.CTkLabel(frame_encabezado, text="", width=75).pack(side="right", padx=5)
@@ -141,7 +174,7 @@ class VentanaGestionarRutinas(ctk.CTkFrame):
         self.fn_actualizar_ejercicio = fn_actualizar_ejercicio
         self.fn_eliminar_ejercicio = fn_eliminar_ejercicio
 
-        # Encabezado: botón '< Volver' a la izquierda y el título de la sección
+        # Encabezado: botón '◀ Volver' a la izquierda y el título de la sección
         crear_encabezado(self, "Gestionar Rutinas", self.app.volver_pantalla, pady=20)
 
         # Botones que llevan a cada subpantalla
@@ -209,7 +242,7 @@ class VentanaCrearRutina(ctk.CTkFrame):
         self.mapa_ejercicios = {}
         self.mapa_quitar = {}
 
-        # Encabezado fijo (fuera del scroll) para que el botón '< Volver' siempre se vea
+        # Encabezado fijo (fuera del scroll) para que el botón '◀ Volver' siempre se vea
         titulo = "Editar Rutina" if id_rutina_editar else "Crear Rutina"
         crear_encabezado(self, titulo, self.app.volver_pantalla)
 
@@ -265,7 +298,9 @@ class VentanaCrearRutina(ctk.CTkFrame):
 
         # Resumen de la rutina armada (todos los días)
         ctk.CTkLabel(self.scroll_frame, text="Rutina armada:", font=("Arial", 13, "bold")).pack(pady=(5, 0))
-        self.txt_resumen = ctk.CTkTextbox(self.scroll_frame, width=350, height=130)
+        # wrap="word": el texto salta de línea entre palabras completas (no corta palabras a la mitad)
+        self.txt_resumen = ctk.CTkTextbox(self.scroll_frame, width=350, height=130, wrap="word")
+        solo_lectura(self.txt_resumen)  # el usuario no puede modificar el texto
         self.txt_resumen.pack(pady=5)
 
         # Quitar un ejercicio del día que se está configurando (por si se agregó por error)
@@ -280,7 +315,7 @@ class VentanaCrearRutina(ctk.CTkFrame):
         self.lbl_msg.pack(pady=4)
 
         # Botón para guardar (sirve tanto para crear como para editar)
-        texto_guardar = "✔ Guardar Cambios en Rutina" if id_rutina_editar else "✔ Guardar Rutina Completa"
+        texto_guardar = "✔ Guardar Cambios en Rutina" if id_rutina_editar else "✔ Guardar Rutina"
         color_guardar = COLOR_NARANJA_BOTON if id_rutina_editar else COLOR_VERDE_BOTON
         hover_guardar = COLOR_NARANJA_HOVER if id_rutina_editar else COLOR_VERDE_HOVER
         ctk.CTkButton(self.scroll_frame, text=texto_guardar, command=self.guardar_todo, width=340, fg_color=color_guardar, hover_color=hover_guardar).pack(pady=(4, 10))
@@ -530,7 +565,7 @@ class VentanaMisRutinas(ctk.CTkFrame):
         # Diccionario de la lista desplegable (muestra nombres, sin IDs): {texto: id_rutina}
         self.mapa_rutinas = {}
 
-        # Encabezado: botón '< Volver' a la izquierda y el título de la sección
+        # Encabezado: botón '◀ Volver' a la izquierda y el título de la sección
         crear_encabezado(self, "Mis Rutinas", self.app.volver_pantalla)
 
         ctk.CTkLabel(self, text="Seleccioná una rutina:", font=("Arial", 12, "bold")).pack(pady=(5, 0))
@@ -538,7 +573,8 @@ class VentanaMisRutinas(ctk.CTkFrame):
         self.combo_rutinas.pack(pady=5)
 
         # Detalle de la rutina elegida (días y ejercicios)
-        self.txt_detalle = ctk.CTkTextbox(self, width=350, height=300)
+        self.txt_detalle = ctk.CTkTextbox(self, width=350, height=300, wrap="word")
+        solo_lectura(self.txt_detalle)  # el usuario no puede modificar el texto
         self.txt_detalle.pack(pady=5)
 
         # Acciones sobre la rutina elegida: Editar o Eliminar
@@ -668,7 +704,7 @@ class VentanaMisEjercicios(ctk.CTkFrame):
         # Diccionario de la lista desplegable (muestra nombres, sin IDs): {texto: objeto Ejercicio}
         self.mapa_ejercicios = {}
 
-        # Encabezado: botón '< Volver' a la izquierda y el título de la sección
+        # Encabezado: botón '◀ Volver' a la izquierda y el título de la sección
         crear_encabezado(self, "Mis Ejercicios", self.app.volver_pantalla)
 
         ctk.CTkButton(self, text="+ Crear Ejercicio Nuevo", command=self.crear_ejercicio, width=340, fg_color=COLOR_VERDE_BOTON, hover_color=COLOR_VERDE_HOVER).pack(pady=5)
@@ -690,7 +726,8 @@ class VentanaMisEjercicios(ctk.CTkFrame):
 
         # Lista de todos los ejercicios propios
         ctk.CTkLabel(self, text="Tus ejercicios personalizados:", font=("Arial", 12, "bold")).pack(pady=(5, 0))
-        self.txt_lista = ctk.CTkTextbox(self, width=350, height=220)
+        self.txt_lista = ctk.CTkTextbox(self, width=350, height=220, wrap="word")
+        solo_lectura(self.txt_lista)  # el usuario no puede modificar el texto
         self.txt_lista.pack(pady=5)
 
         self.cargar_ejercicios()
@@ -855,7 +892,7 @@ class VentanaEditarEjercicioModal(ctk.CTkFrame):
 
 # Sección "Empezar Rutina": se abre directo desde el menú principal para entrenar y registrar series
 class VentanaComenzarEntrenar(ctk.CTkFrame):
-    def __init__(self, parent, dni_usuario, fn_obtener_rutinas, fn_obtener_dias, fn_registrar_serie, fn_obtener_ejercicios_dia=None, fn_obtener_series_fecha=None, fn_obtener_ultima_fecha=None):
+    def __init__(self, parent, dni_usuario, fn_obtener_rutinas, fn_obtener_dias, fn_registrar_serie, fn_obtener_ejercicios_dia=None, fn_obtener_series_fecha=None, fn_obtener_ultima_fecha=None, fn_obtener_ultimo_dia=None):
         app = parent.winfo_toplevel()
         super().__init__(app, fg_color="transparent")
         self.app = app
@@ -868,16 +905,22 @@ class VentanaComenzarEntrenar(ctk.CTkFrame):
         # Funciones para ver las series de hoy y lo que hizo la última vez en cada ejercicio
         self.fn_obtener_series_fecha = fn_obtener_series_fecha
         self.fn_obtener_ultima_fecha = fn_obtener_ultima_fecha
+        # Función para saber qué día de la rutina entrenó por última vez (para sugerir el día de hoy)
+        self.fn_obtener_ultimo_dia = fn_obtener_ultimo_dia
 
         # Diccionario con la cantidad de series planificadas de cada ejercicio del día {id_ejercicio: series}
         self.series_planificadas = {}
+        # Máximo de series del ejercicio elegido (límite del campo N° de serie)
+        self.max_series_actual = 10
         # Diccionarios de las listas desplegables (muestran nombres, sin IDs):
         # rutinas {texto: id_rutina}, días {texto: id_rutina_dia} y ejercicios {texto: (id_ejercicio, nombre)}
         self.mapa_rutinas = {}
         self.mapa_dias = {}
         self.mapa_ejercicios_dia = {}
+        # Número de cada día de la lista {texto: numero_dia} (se guarda junto con cada serie)
+        self.numero_de_dia = {}
 
-        # Encabezado fijo (fuera del scroll) para que el botón '< Volver' siempre se vea
+        # Encabezado fijo (fuera del scroll) para que el botón '◀ Volver' siempre se vea
         crear_encabezado(self, "Empezar Rutina", self.app.volver_pantalla)
 
         # Contenedor con scroll para asegurar que todos los campos sean visibles
@@ -928,13 +971,16 @@ class VentanaComenzarEntrenar(ctk.CTkFrame):
         frame_serie = ctk.CTkFrame(scroll_c, fg_color="transparent")
         frame_serie.pack(pady=3)
         ctk.CTkLabel(frame_serie, text="N° de serie:", width=110, anchor="w").pack(side="left", padx=5)
-        self.ent_serie_num = ctk.CTkEntry(frame_serie, placeholder_text="ej: 1", width=220)
+        self.ent_serie_num = ctk.CTkEntry(frame_serie, placeholder_text="ej: 1", width=148)
         self.ent_serie_num.pack(side="left", padx=5)
+        # Flechas para subir y bajar el número de serie (de 1 a 10, igual que en Crear Rutina)
+        ctk.CTkButton(frame_serie, text="▲", command=self.subir_serie, width=32, fg_color=COLOR_GRIS_BOTON, hover_color=COLOR_GRIS_HOVER).pack(side="left", padx=2)
+        ctk.CTkButton(frame_serie, text="▼", command=self.bajar_serie, width=32, fg_color=COLOR_GRIS_BOTON, hover_color=COLOR_GRIS_HOVER).pack(side="left", padx=2)
 
         frame_peso = ctk.CTkFrame(scroll_c, fg_color="transparent")
         frame_peso.pack(pady=3)
         ctk.CTkLabel(frame_peso, text="Peso (kg):", width=110, anchor="w").pack(side="left", padx=5)
-        self.ent_peso = ctk.CTkEntry(frame_peso, placeholder_text="ej: 80", width=220)
+        self.ent_peso = ctk.CTkEntry(frame_peso, placeholder_text="ej: 80 (0 = peso corporal)", width=220)
         self.ent_peso.pack(side="left", padx=5)
 
         frame_reps = ctk.CTkFrame(scroll_c, fg_color="transparent")
@@ -943,9 +989,10 @@ class VentanaComenzarEntrenar(ctk.CTkFrame):
         self.ent_reps = ctk.CTkEntry(frame_reps, placeholder_text="ej: 12", width=220)
         self.ent_reps.pack(side="left", padx=5)
 
-        ctk.CTkButton(scroll_c, text="✔ Guardar Registro en BD", command=self.guardar_serie, width=340, fg_color=COLOR_VERDE_BOTON, hover_color=COLOR_VERDE_HOVER).pack(pady=10)
+        ctk.CTkButton(scroll_c, text="✔ Guardar Registro", command=self.guardar_serie, width=340, fg_color=COLOR_VERDE_BOTON, hover_color=COLOR_VERDE_HOVER).pack(pady=10)
 
-        self.txt_salida = ctk.CTkTextbox(scroll_c, width=350, height=120)
+        self.txt_salida = ctk.CTkTextbox(scroll_c, width=350, height=120, wrap="word")
+        solo_lectura(self.txt_salida)  # el usuario no puede modificar el texto
         self.txt_salida.pack(pady=5)
 
         if lista_rutinas and lista_rutinas[0] != "Sin Rutinas":
@@ -964,15 +1011,20 @@ class VentanaComenzarEntrenar(ctk.CTkFrame):
             dias = self.fn_obtener_dias(id_rutina)
             # La lista muestra "Día 1 (Pecho)" y el ID del día queda en el diccionario
             self.mapa_dias = {}
+            self.numero_de_dia = {}
             for d in dias:
                 texto = texto_unico(f"Día {d[1]} ({d[2]})", self.mapa_dias)
                 self.mapa_dias[texto] = d[0]
+                self.numero_de_dia[texto] = d[1]
             opciones = list(self.mapa_dias.keys()) if self.mapa_dias else ["Sin Días"]
             self.combo_dias.configure(values=opciones)
-            self.combo_dias.set(opciones[0])
             if opciones[0] != "Sin Días":
-                self.cargar_ejercicios_del_dia(opciones[0])
+                # Elegimos automáticamente el día que le toca hoy
+                dia_sugerido = self.sugerir_dia(id_rutina, dias, opciones)
+                self.combo_dias.set(dia_sugerido)
+                self.cargar_ejercicios_del_dia(dia_sugerido)
             else:
+                self.combo_dias.set(opciones[0])
                 self.combo_ejercicios_dia.configure(values=["Sin Ejercicios"])
                 self.combo_ejercicios_dia.set("Sin Ejercicios")
                 self.seleccionar_ejercicio("")
@@ -1000,11 +1052,53 @@ class VentanaComenzarEntrenar(ctk.CTkFrame):
                 self.combo_ejercicios_dia.set("Sin ejercicios asignados a este día")
                 self.seleccionar_ejercicio("")
 
+    def sugerir_dia(self, id_rutina, dias, opciones):
+        """
+        Devuelve el texto del día que le toca entrenar hoy:
+        - Si nunca entrenó esta rutina: el Día 1.
+        - Si hoy ya entrenó: el mismo día (para seguir cargando series).
+        - Si no: el día siguiente al último que entrenó (después del último vuelve al Día 1).
+        """
+        ultimo = None
+        if self.fn_obtener_ultimo_dia:
+            ultimo = self.fn_obtener_ultimo_dia(self.dni_usuario, id_rutina)
+
+        # Lista con los números de día de la rutina (ej: [1, 2, 3])
+        numeros = []
+        for d in dias:
+            numeros.append(d[1])
+
+        if not ultimo:
+            # Nunca entrenó esta rutina: empieza por el primer día
+            numero_sugerido = numeros[0]
+        else:
+            numero_ultimo, fecha_ultima = ultimo
+            if fecha_ultima == date.today():
+                # Hoy ya entrenó: sigue con el mismo día
+                numero_sugerido = numero_ultimo
+            else:
+                # Buscamos el día siguiente al último entrenado (si era el último, volvemos al primero)
+                numero_sugerido = numeros[0]
+                for numero in numeros:
+                    if numero > numero_ultimo:
+                        numero_sugerido = numero
+                        break
+
+        # Buscamos el texto de la lista que corresponde al día sugerido
+        for texto in opciones:
+            if texto.startswith(f"Día {numero_sugerido} "):
+                return texto
+        return opciones[0]
+
     def texto_series(self, series):
         """Arma un texto corto con una lista de series. Ej: 'S1: 80.0kg x 10 | S2: 80.0kg x 9'."""
         partes = []
         for serie in series:
-            partes.append(f"S{serie[0]}: {serie[1]}kg x {serie[2]}")
+            # Si el peso es 0, es un ejercicio con peso corporal: mostramos solo las repeticiones
+            if serie[1] == 0:
+                partes.append(f"S{serie[0]}: {serie[2]} reps")
+            else:
+                partes.append(f"S{serie[0]}: {serie[1]}kg x {serie[2]}")
         return " | ".join(partes)
 
     def seleccionar_ejercicio(self, seleccion_ej):
@@ -1022,6 +1116,8 @@ class VentanaComenzarEntrenar(ctk.CTkFrame):
         id_ej = self.mapa_ejercicios_dia[seleccion_ej][0]
         hoy = date.today()
         total_series = self.series_planificadas.get(id_ej, 0)
+        # El N° de serie solo puede ir de 1 hasta las series planificadas de este ejercicio
+        self.max_series_actual = total_series if total_series > 0 else 10
 
         # Series que ya registró HOY en este ejercicio
         series_hoy = []
@@ -1033,13 +1129,15 @@ class VentanaComenzarEntrenar(ctk.CTkFrame):
         for serie in series_hoy:
             if serie[0] >= siguiente:
                 siguiente = serie[0] + 1
-        self.ent_serie_num.delete(0, "end")
-        self.ent_serie_num.insert(0, str(siguiente))
 
-        if siguiente <= total_series:
+        if siguiente <= self.max_series_actual:
             self.lbl_serie_actual.configure(text=f"Serie {siguiente} de {total_series}")
         else:
-            self.lbl_serie_actual.configure(text=f"✔ Completaste las {total_series} series (podés cargar una extra)")
+            # Ya completó todas las series: el campo queda en la última (si la vuelve a cargar, se reemplaza)
+            siguiente = self.max_series_actual
+            self.lbl_serie_actual.configure(text=f"✔ Completaste las {total_series} series")
+        self.ent_serie_num.delete(0, "end")
+        self.ent_serie_num.insert(0, str(siguiente))
 
         if series_hoy:
             self.lbl_hoy.configure(text=f"Hoy: {self.texto_series(series_hoy)}")
@@ -1076,25 +1174,75 @@ class VentanaComenzarEntrenar(ctk.CTkFrame):
                 self.txt_salida.insert("end", "⚠ La serie y las repeticiones deben ser mayores a 0 y el peso no puede ser negativo.\n")
                 return
 
+            # El N° de serie no puede superar las series planificadas del ejercicio
+            if s_num > self.max_series_actual:
+                self.txt_salida.insert("end", f"⚠ Este ejercicio tiene {self.max_series_actual} series: elegí una serie entre 1 y {self.max_series_actual}.\n")
+                self.txt_salida.see("end")
+                return
+
             # Creamos un objeto RegistroEntrenamiento con los datos de la serie
             # (el id_registro es None porque lo genera la base de datos)
             registro = RegistroEntrenamiento(None, self.dni_usuario, id_ej, hoy, s_num, peso, reps)
 
-            resultado = self.fn_registrar_serie(registro.dni_usuario, registro.id_ejercicio, registro.fecha, registro.serie_numero, registro.peso_kg, registro.repeticiones)
+            # Guardamos también qué rutina y qué día se está entrenando (para poder comparar días iguales)
+            id_rutina = self.mapa_rutinas.get(self.combo_rutinas.get())
+            numero_dia = self.numero_de_dia.get(self.combo_dias.get())
+
+            resultado = self.fn_registrar_serie(registro.dni_usuario, registro.id_ejercicio, registro.fecha, registro.serie_numero, registro.peso_kg, registro.repeticiones, id_rutina, numero_dia)
             # Usamos el __str__ y el método calcular_volumen() de la clase
+            # (si el peso es 0 es un ejercicio con peso corporal y no tiene volumen en kg)
+            texto_volumen = "Peso corporal" if peso == 0 else f"Volumen: {registro.calcular_volumen():.1f} kg"
             if resultado == "reemplazada":
-                self.txt_salida.insert("end", f"🔄 {nom_ej} -> {registro} | Volumen: {registro.calcular_volumen():.1f} kg (serie reemplazada)\n")
+                self.txt_salida.insert("end", f"🔄 {nom_ej} -> {registro} | {texto_volumen} (serie reemplazada)\n")
             elif resultado:
-                self.txt_salida.insert("end", f"✔ {nom_ej} -> {registro} | Volumen: {registro.calcular_volumen():.1f} kg (guardada)\n")
+                self.txt_salida.insert("end", f"✔ {nom_ej} -> {registro} | {texto_volumen} (guardada)\n")
             else:
                 self.txt_salida.insert("end", "❌ Error al guardar la serie en la base de datos.\n")
 
             if resultado:
                 # Actualizamos la información y sugerimos la siguiente serie
                 self.seleccionar_ejercicio(seleccion_ej)
+                # Si con esta serie completó las series planificadas, pasamos solos al siguiente ejercicio
+                if resultado == "nueva" and s_num == self.series_planificadas.get(id_ej, 0):
+                    self.pasar_al_siguiente_ejercicio(seleccion_ej)
             self.txt_salida.see("end")
         except ValueError:
             self.txt_salida.insert("end", "⚠ Ingrese números válidos para serie, peso y repeticiones.\n")
+
+    def cambiar_numero_serie(self, cambio):
+        """Suma o resta 1 al número de serie (siempre entre 1 y las series planificadas del ejercicio)."""
+        texto = self.ent_serie_num.get().strip()
+        numero = int(texto) if texto.isdigit() else 1
+        numero = numero + cambio
+        if numero < 1:
+            numero = 1
+        if numero > self.max_series_actual:
+            numero = self.max_series_actual
+        self.ent_serie_num.delete(0, "end")
+        self.ent_serie_num.insert(0, str(numero))
+
+    def subir_serie(self):
+        """Flecha ▲: suma una serie (máximo: las series planificadas del ejercicio)."""
+        self.cambiar_numero_serie(1)
+
+    def bajar_serie(self):
+        """Flecha ▼: resta una serie (mínimo 1)."""
+        self.cambiar_numero_serie(-1)
+
+    def pasar_al_siguiente_ejercicio(self, seleccion_actual):
+        """Al terminar las series de un ejercicio, elige automáticamente el siguiente ejercicio del día."""
+        opciones = list(self.mapa_ejercicios_dia.keys())
+        posicion = opciones.index(seleccion_actual)
+        if posicion + 1 < len(opciones):
+            siguiente = opciones[posicion + 1]
+            self.combo_ejercicios_dia.set(siguiente)
+            # Limpiamos peso y repeticiones porque es otro ejercicio
+            self.ent_peso.delete(0, "end")
+            self.ent_reps.delete(0, "end")
+            self.seleccionar_ejercicio(siguiente)
+            self.txt_salida.insert("end", f"➡ Terminaste las series. Siguiente ejercicio: {self.mapa_ejercicios_dia[siguiente][1]}\n")
+        else:
+            self.txt_salida.insert("end", "🏁 ¡Terminaste todos los ejercicios del día! Buen entrenamiento.\n")
 
 
 class VentanaVerSeguimiento(ctk.CTkFrame):
@@ -1107,7 +1255,7 @@ class VentanaVerSeguimiento(ctk.CTkFrame):
     4. Comparativa de rendimiento entre Fecha 1 y Fecha 2.
     5. Análisis inteligente con IA (Gemini) sobre estadísticas, puntos fuertes, débiles y consejos.
     """
-    def __init__(self, parent, dni_usuario, fn_obtener_seguimiento, fn_obtener_fechas_entrenadas=None, fn_obtener_registros_fecha=None, fn_analizar_ia=None, nombre_usuario="Atleta"):
+    def __init__(self, parent, dni_usuario, fn_obtener_seguimiento, fn_obtener_fechas_entrenadas=None, fn_obtener_registros_fecha=None, fn_analizar_ia=None, nombre_usuario="Atleta", fn_obtener_dias_por_fecha=None, fn_obtener_grupos_por_fecha=None):
         app = parent.winfo_toplevel()
         super().__init__(app, fg_color="transparent")
         self.app = app
@@ -1118,6 +1266,17 @@ class VentanaVerSeguimiento(ctk.CTkFrame):
         self.fn_obtener_registros_fecha = fn_obtener_registros_fecha
         self.fn_analizar_ia = fn_analizar_ia
         self.nombre_usuario = nombre_usuario
+
+        # Rutina y día entrenado en cada fecha {fecha: (id_rutina, numero_dia, nombre_rutina)}
+        # Se usa para saber qué días se pueden comparar (misma rutina y mismo día)
+        self.dias_por_fecha = {}
+        if fn_obtener_dias_por_fecha:
+            self.dias_por_fecha = fn_obtener_dias_por_fecha(self.dni_usuario)
+
+        # Grupos musculares entrenados en cada fecha {fecha: "Pecho, Tríceps"} (según los ejercicios registrados)
+        self.grupos_por_fecha = {}
+        if fn_obtener_grupos_por_fecha:
+            self.grupos_por_fecha = fn_obtener_grupos_por_fecha(self.dni_usuario)
 
         # Fechas seleccionadas para comparar
         self.fecha_seleccionada = None
@@ -1140,7 +1299,7 @@ class VentanaVerSeguimiento(ctk.CTkFrame):
                     f_str = r[0].strftime("%Y-%m-%d") if hasattr(r[0], "strftime") else str(r[0])
                     self.fechas_con_registro.add(f_str)
 
-        # Encabezado fijo (fuera del scroll) para que el botón '< Volver' siempre se vea
+        # Encabezado fijo (fuera del scroll) para que el botón '◀ Volver' siempre se vea
         crear_encabezado(self, "Seguimiento de Entrenamiento", self.app.volver_pantalla, pady=(5, 2))
 
         # Contenedor principal con scroll
@@ -1179,27 +1338,35 @@ class VentanaVerSeguimiento(ctk.CTkFrame):
 
         # Referencia de colores del calendario
         ctk.CTkLabel(
-            self.frame_cal_contenedor, text="Verde: día entrenado  |  Naranja: Fecha 1  |  Violeta: Fecha 2\nBorde blanco: día seleccionado",
+            self.frame_cal_contenedor,
+            text="Verde: día entrenado  |  Azul: Fecha 1  |  Amarillo: Fecha 2\nAmarillo oscuro: días comparables con la Fecha 1\nBorde blanco: día seleccionado",
             font=("Arial", 10), text_color="#A0A0A0"
-        ).pack(pady=(0, 6))
+        ).pack(pady=(0, 4))
+
+        # Texto con los días que se pueden comparar con la Fecha 1 (misma rutina y mismo día)
+        self.lbl_comparables = ctk.CTkLabel(
+            self.frame_cal_contenedor, text="Elegí la Fecha 1 para ver con qué días se puede comparar.",
+            font=("Arial", 11), text_color=COLOR_AMARILLO_NOPY, wraplength=340
+        )
+        self.lbl_comparables.pack(pady=(0, 6))
 
         frame_sel_botones = ctk.CTkFrame(self.frame_cal_contenedor, fg_color="transparent")
         frame_sel_botones.pack(pady=(0, 10), padx=10, fill="x")
 
-        self.lbl_fecha_activa = ctk.CTkLabel(frame_sel_botones, text="Fecha seleccionada en calendario: Ninguna", font=("Arial", 12, "bold"), wraplength=340)
+        self.lbl_fecha_activa = ctk.CTkLabel(frame_sel_botones, text="Hacé clic en un día del calendario.", font=("Arial", 12, "bold"), wraplength=340)
         self.lbl_fecha_activa.pack(pady=3)
 
         frame_fijar = ctk.CTkFrame(frame_sel_botones, fg_color="transparent")
         frame_fijar.pack(pady=3)
 
         ctk.CTkButton(
-            frame_fijar, text="📌 Seleccionar Fecha 1", command=self.fijar_fecha_1,
-            fg_color=COLOR_NARANJA_BOTON, hover_color=COLOR_NARANJA_HOVER, text_color="black", font=("Arial", 12, "bold"), width=160
+            frame_fijar, text="Seleccionar Fecha 1", command=self.fijar_fecha_1,
+            fg_color=COLOR_AZUL_BOTON, hover_color=COLOR_AZUL_HOVER, font=("Arial", 12, "bold"), width=160
         ).pack(side="left", padx=4)
 
         ctk.CTkButton(
-            frame_fijar, text="📌 Seleccionar Fecha 2", command=self.fijar_fecha_2,
-            fg_color=COLOR_VIOLETA_BOTON, hover_color=COLOR_VIOLETA_HOVER, font=("Arial", 12, "bold"), width=160
+            frame_fijar, text="Seleccionar Fecha 2", command=self.fijar_fecha_2,
+            fg_color=COLOR_AMARILLO_NOPY, hover_color="#F5CD4F", text_color="black", font=("Arial", 12, "bold"), width=160
         ).pack(side="left", padx=4)
 
         # SECCIÓN 2: CARDS DE FECHA 1 Y FECHA 2 (una debajo de la otra para que entren en la ventana)
@@ -1208,35 +1375,40 @@ class VentanaVerSeguimiento(ctk.CTkFrame):
 
         self.card_f1 = ctk.CTkFrame(frame_cards, fg_color="#262626", corner_radius=8)
         self.card_f1.pack(fill="x", pady=4)
-        self.lbl_titulo_f1 = ctk.CTkLabel(self.card_f1, text="Fecha 1: (No seleccionada)", font=("Arial", 13, "bold"), text_color=COLOR_NARANJA_BOTON)
+        self.lbl_titulo_f1 = ctk.CTkLabel(self.card_f1, text="Fecha 1: (No seleccionada)", font=("Arial", 13, "bold"), text_color=COLOR_AZUL_HOVER, wraplength=330)
         self.lbl_titulo_f1.pack(pady=5)
-        self.txt_card_f1 = ctk.CTkTextbox(self.card_f1, width=340, height=110)
+        self.txt_card_f1 = ctk.CTkTextbox(self.card_f1, width=340, height=110, wrap="word")
+        solo_lectura(self.txt_card_f1)  # el usuario no puede modificar el texto
         self.txt_card_f1.pack(pady=5, padx=8)
 
         self.card_f2 = ctk.CTkFrame(frame_cards, fg_color="#262626", corner_radius=8)
         self.card_f2.pack(fill="x", pady=4)
-        self.lbl_titulo_f2 = ctk.CTkLabel(self.card_f2, text="Fecha 2: (No seleccionada)", font=("Arial", 13, "bold"), text_color=COLOR_VIOLETA_HOVER)
+        self.lbl_titulo_f2 = ctk.CTkLabel(self.card_f2, text="Fecha 2: (No seleccionada)", font=("Arial", 13, "bold"), text_color=COLOR_AMARILLO_NOPY, wraplength=330)
         self.lbl_titulo_f2.pack(pady=5)
-        self.txt_card_f2 = ctk.CTkTextbox(self.card_f2, width=340, height=110)
+        self.txt_card_f2 = ctk.CTkTextbox(self.card_f2, width=340, height=110, wrap="word")
+        solo_lectura(self.txt_card_f2)  # el usuario no puede modificar el texto
         self.txt_card_f2.pack(pady=5, padx=8)
 
         ctk.CTkButton(
-            self.scroll_c, text="⚖ Comparar Fecha 1 con Fecha 2", command=self.comparar_fechas,
+            self.scroll_c, text="Comparar Fecha 1 con Fecha 2", command=self.comparar_fechas,
             fg_color=COLOR_VERDE_BOTON, hover_color=COLOR_VERDE_HOVER, width=340, height=35, font=("Arial", 13, "bold")
         ).pack(pady=6)
 
-        self.txt_resultado_comparativa = ctk.CTkTextbox(self.scroll_c, width=350, height=130)
+        self.txt_resultado_comparativa = ctk.CTkTextbox(self.scroll_c, width=350, height=130, wrap="word")
+        solo_lectura(self.txt_resultado_comparativa)  # el usuario no puede modificar el texto
         self.txt_resultado_comparativa.pack(pady=5)
 
         # SECCIÓN 3: INTELIGENCIA ARTIFICIAL (GEMINI)
-        ctk.CTkLabel(self.scroll_c, text="Análisis Inteligente con IA (Google Gemini)", font=("Arial", 14, "bold"), text_color=COLOR_AZUL_NOPY, wraplength=340).pack(pady=(12, 4))
+        ctk.CTkLabel(self.scroll_c, text="Análisis Inteligente", font=("Arial", 14, "bold"), text_color=COLOR_AZUL_NOPY, wraplength=340).pack(pady=(12, 4))
 
-        ctk.CTkButton(
-            self.scroll_c, text="✨ Analizar Rendimiento con IA (Gemini)", command=self.pedir_analisis_ia,
+        self.btn_ia = ctk.CTkButton(
+            self.scroll_c, text="Analizar Rendimiento", command=self.pedir_analisis_ia,
             fg_color=COLOR_AZUL_BOTON, hover_color=COLOR_AZUL_HOVER, width=340, height=38, font=("Arial", 13, "bold")
-        ).pack(pady=5)
+        )
+        self.btn_ia.pack(pady=5)
 
-        self.txt_ia = ctk.CTkTextbox(self.scroll_c, width=350, height=260)
+        self.txt_ia = ctk.CTkTextbox(self.scroll_c, width=350, height=260, wrap="word")
+        solo_lectura(self.txt_ia)  # el usuario no puede modificar el texto
         self.txt_ia.pack(pady=5)
 
         # Vinculamos scroll fluido en toda la superficie
@@ -1281,14 +1453,17 @@ class VentanaVerSeguimiento(ctk.CTkFrame):
     def pintar_calendario(self):
         """
         Pinta cada día del calendario según su estado:
-        Naranja = Fecha 1, Violeta = Fecha 2, Verde = día entrenado, Gris = sin registro.
-        El día seleccionado se marca con un borde blanco.
+        Azul = Fecha 1, Amarillo = Fecha 2, Amarillo oscuro = días comparables con la Fecha 1,
+        Verde = día entrenado, Gris = sin registro. El día seleccionado se marca con un borde blanco.
         """
+        comparables = self.dias_comparables()
         for fecha_str, btn_dia in self.botones_dias.items():
             if fecha_str == self.fecha_1:
-                btn_color, hover_color, txt_color = COLOR_NARANJA_BOTON, COLOR_NARANJA_HOVER, "black"
+                btn_color, hover_color, txt_color = COLOR_AZUL_BOTON, COLOR_AZUL_HOVER, "#FFFFFF"
             elif fecha_str == self.fecha_2:
-                btn_color, hover_color, txt_color = COLOR_VIOLETA_BOTON, COLOR_VIOLETA_HOVER, "#FFFFFF"
+                btn_color, hover_color, txt_color = COLOR_AMARILLO_NOPY, "#F5CD4F", "black"
+            elif fecha_str in comparables:
+                btn_color, hover_color, txt_color = COLOR_AMARILLO_OSCURO, COLOR_AMARILLO_OSCURO_HOVER, "#FFFFFF"
             elif fecha_str in self.fechas_con_registro:
                 btn_color, hover_color, txt_color = COLOR_VERDE_BOTON, COLOR_VERDE_HOVER, "#FFFFFF"
             else:
@@ -1314,10 +1489,66 @@ class VentanaVerSeguimiento(ctk.CTkFrame):
             self.mes_cal += 1
         self.actualizar_vista_calendario()
 
+    def texto_dia_rutina(self, fecha_str):
+        """Devuelve un texto con la rutina y el día entrenado en esa fecha. Ej: 'Día 3 de Push Pull Legs'."""
+        if fecha_str in self.dias_por_fecha:
+            id_rutina, numero_dia, nombre_rutina = self.dias_por_fecha[fecha_str]
+            return f"Día {numero_dia} de {nombre_rutina}"
+        return ""
+
+    def es_mismo_dia_de_rutina(self, fecha_str):
+        """Devuelve True si en esa fecha se entrenó la MISMA rutina y el MISMO día que en la Fecha 1."""
+        if not self.fecha_1 or self.fecha_1 not in self.dias_por_fecha or fecha_str not in self.dias_por_fecha:
+            return False
+        id_rutina_1, numero_dia_1, nombre_rutina_1 = self.dias_por_fecha[self.fecha_1]
+        datos = self.dias_por_fecha[fecha_str]
+        return datos[0] == id_rutina_1 and datos[1] == numero_dia_1
+
+    def dias_comparables(self):
+        """
+        Devuelve la lista de fechas que se pueden comparar con la Fecha 1:
+        las fechas POSTERIORES a la Fecha 1 en las que se entrenó la misma rutina y el mismo día.
+        (Las fechas en formato "AAAA-MM-DD" se pueden comparar como texto: "2026-11-10" > "2026-11-03")
+        """
+        comparables = []
+        # Si todavía no hay Fecha 1 elegida, no hay días comparables
+        if not self.fecha_1:
+            return comparables
+        for fecha_str in self.dias_por_fecha:
+            if fecha_str > self.fecha_1 and self.es_mismo_dia_de_rutina(fecha_str):
+                comparables.append(fecha_str)
+        comparables.sort()
+        return comparables
+
+    def actualizar_texto_comparables(self):
+        """Muestra debajo del calendario con qué días se puede comparar la Fecha 1."""
+        if not self.fecha_1:
+            texto = "Elegí la Fecha 1 para ver con qué días se puede comparar."
+        elif self.fecha_1 not in self.dias_por_fecha:
+            texto = "⚠ La Fecha 1 no tiene guardado qué rutina se entrenó (registro antiguo o día sin entrenamientos): no se puede comparar."
+        else:
+            comparables = self.dias_comparables()
+            if comparables:
+                # Mostramos las fechas en formato dd/mm/aaaa
+                fechas_cortas = []
+                for f in comparables:
+                    fechas_cortas.append(formato_fecha(f))
+                texto = f"Días comparables ({self.texto_dia_rutina(self.fecha_1)}): {', '.join(fechas_cortas)}"
+            else:
+                texto = f"Todavía no hay otro {self.texto_dia_rutina(self.fecha_1)} posterior a esta fecha para comparar."
+        self.lbl_comparables.configure(text=texto)
+
     def seleccionar_dia_calendario(self, fecha_str):
         self.fecha_seleccionada = fecha_str
-        tiene = " (Tiene entrenamientos ✔)" if fecha_str in self.fechas_con_registro else " (Sin registro)"
-        self.lbl_fecha_activa.configure(text=f"Fecha seleccionada en calendario: {fecha_str}{tiene}")
+        # Ej: "11/11/2026: Registra entrenamiento (Piernas)" o "10/11/2026: No registra entrenamiento"
+        if fecha_str in self.fechas_con_registro:
+            grupos = self.grupos_por_fecha.get(fecha_str, "")
+            texto = f"{formato_fecha(fecha_str)}: Registra entrenamiento"
+            if grupos:
+                texto += f" ({grupos})"
+        else:
+            texto = f"{formato_fecha(fecha_str)}: No registra entrenamiento"
+        self.lbl_fecha_activa.configure(text=texto)
         # Marcamos el día elegido en el calendario
         self.pintar_calendario()
 
@@ -1331,7 +1562,28 @@ class VentanaVerSeguimiento(ctk.CTkFrame):
         if not self.fecha_seleccionada:
             self.lbl_fecha_activa.configure(text="⚠ Hacé clic primero en un día del calendario.")
             return
+        if not self.fecha_1:
+            self.lbl_fecha_activa.configure(text="⚠ Primero elegí la Fecha 1.")
+            return
+        if self.fecha_1 not in self.dias_por_fecha:
+            self.lbl_fecha_activa.configure(text="⚠ La Fecha 1 no tiene guardado qué rutina se entrenó: no se puede comparar.")
+            return
+        # La Fecha 2 tiene que ser posterior a la Fecha 1 (así la comparativa va de la más vieja a la más nueva)
+        if self.fecha_seleccionada <= self.fecha_1:
+            self.lbl_fecha_activa.configure(text="⚠ La Fecha 2 tiene que ser posterior a la Fecha 1. Elegí un día en amarillo oscuro.")
+            return
+        # Solo se puede elegir como Fecha 2 un día comparable (misma rutina y mismo día)
+        if self.fecha_seleccionada not in self.dias_comparables():
+            self.lbl_fecha_activa.configure(text=f"⚠ Ese día no es comparable. Elegí un día en amarillo oscuro ({self.texto_dia_rutina(self.fecha_1)}).")
+            return
         self.establecer_f2(self.fecha_seleccionada)
+
+    def limpiar_fecha_2(self):
+        """Borra la Fecha 2 (se usa cuando cambia la Fecha 1 y la Fecha 2 deja de ser comparable)."""
+        self.fecha_2 = None
+        self.lbl_titulo_f2.configure(text="Fecha 2: (No seleccionada)")
+        self.txt_card_f2.delete("1.0", "end")
+        self.txt_resultado_comparativa.delete("1.0", "end")
 
     def obtener_registros_de_fecha(self, fecha_str):
         if self.fn_obtener_registros_fecha:
@@ -1346,8 +1598,13 @@ class VentanaVerSeguimiento(ctk.CTkFrame):
 
     def establecer_f1(self, fecha_str):
         self.fecha_1 = fecha_str
+        # Si la Fecha 2 ya no es comparable con la nueva Fecha 1, la borramos
+        if self.fecha_2 and self.fecha_2 not in self.dias_comparables():
+            self.limpiar_fecha_2()
         self.pintar_calendario()
-        self.lbl_titulo_f1.configure(text=f"Fecha 1: {fecha_str}")
+        self.actualizar_texto_comparables()
+        dia_rutina = self.texto_dia_rutina(fecha_str)
+        self.lbl_titulo_f1.configure(text=f"Fecha 1: {formato_fecha(fecha_str)}" + (f" ({dia_rutina})" if dia_rutina else ""))
         self.txt_card_f1.delete("1.0", "end")
         regs = self.obtener_registros_de_fecha(fecha_str)
         if not regs:
@@ -1359,7 +1616,8 @@ class VentanaVerSeguimiento(ctk.CTkFrame):
     def establecer_f2(self, fecha_str):
         self.fecha_2 = fecha_str
         self.pintar_calendario()
-        self.lbl_titulo_f2.configure(text=f"Fecha 2: {fecha_str}")
+        dia_rutina = self.texto_dia_rutina(fecha_str)
+        self.lbl_titulo_f2.configure(text=f"Fecha 2: {formato_fecha(fecha_str)}" + (f" ({dia_rutina})" if dia_rutina else ""))
         self.txt_card_f2.delete("1.0", "end")
         regs = self.obtener_registros_de_fecha(fecha_str)
         if not regs:
@@ -1374,8 +1632,14 @@ class VentanaVerSeguimiento(ctk.CTkFrame):
             self.txt_resultado_comparativa.insert("end", "⚠ Debes seleccionar Fecha 1 y Fecha 2 para comparar.")
             return
 
-        regs_1 = self.obtener_registros_de_fecha(self.fecha_1)
-        regs_2 = self.obtener_registros_de_fecha(self.fecha_2)
+        # Ordenamos las fechas solas: la comparativa siempre va de la más vieja a la más nueva
+        fecha_vieja = self.fecha_1
+        fecha_nueva = self.fecha_2
+        if fecha_vieja > fecha_nueva:
+            fecha_vieja, fecha_nueva = fecha_nueva, fecha_vieja
+
+        regs_1 = self.obtener_registros_de_fecha(fecha_vieja)
+        regs_2 = self.obtener_registros_de_fecha(fecha_nueva)
 
         if not regs_1 and not regs_2:
             self.txt_resultado_comparativa.insert("end", "Ninguna de las dos fechas tiene registros guardados.")
@@ -1383,14 +1647,18 @@ class VentanaVerSeguimiento(ctk.CTkFrame):
 
         volumen_1 = sum(float(r[3]) * int(r[4]) for r in regs_1)
         volumen_2 = sum(float(r[3]) * int(r[4]) for r in regs_2)
+        # Total de repeticiones (sirve también para los ejercicios con peso corporal, que no suman volumen)
+        reps_1 = sum(int(r[4]) for r in regs_1)
+        reps_2 = sum(int(r[4]) for r in regs_2)
 
-        self.txt_resultado_comparativa.insert("end", f"=== COMPARATIVA: {self.fecha_1} vs {self.fecha_2} ===\n\n")
+        self.txt_resultado_comparativa.insert("end", f"=== COMPARATIVA: {formato_fecha(fecha_vieja)} ➔ {formato_fecha(fecha_nueva)} ===\n\n")
         self.txt_resultado_comparativa.insert("end", f"• Volumen Total Levantado (kg × reps):\n")
         self.txt_resultado_comparativa.insert("end", f"   Fecha 1: {volumen_1:.1f} kg | Fecha 2: {volumen_2:.1f} kg\n")
-        
+
         dif_vol = volumen_2 - volumen_1
         signo = "+" if dif_vol >= 0 else ""
-        self.txt_resultado_comparativa.insert("end", f"   Diferencia de volumen: {signo}{dif_vol:.1f} kg\n\n")
+        self.txt_resultado_comparativa.insert("end", f"   Diferencia de volumen: {signo}{dif_vol:.1f} kg\n")
+        self.txt_resultado_comparativa.insert("end", f"• Repeticiones totales:\n   Fecha 1: {reps_1} | Fecha 2: {reps_2} ({reps_2 - reps_1:+d})\n\n")
 
         ej_1 = {}
         for r in regs_1:
@@ -1401,15 +1669,38 @@ class VentanaVerSeguimiento(ctk.CTkFrame):
 
         comunes = set(ej_1.keys()).intersection(set(ej_2.keys()))
         if comunes:
-            self.txt_resultado_comparativa.insert("end", "• Ejercicios realizados en ambas fechas:\n")
-            for nombre_ej in comunes:
-                max_peso_1 = max(s[0] for s in ej_1[nombre_ej])
-                max_peso_2 = max(s[0] for s in ej_2[nombre_ej])
-                dif_peso = max_peso_2 - max_peso_1
-                prog = "↗ Progreso" if dif_peso > 0 else ("=" if dif_peso == 0 else "↘ Menor carga")
-                self.txt_resultado_comparativa.insert("end", f"   - {nombre_ej}: {max_peso_1}kg ➔ {max_peso_2}kg ({prog} {dif_peso:+.1f}kg)\n")
+            self.txt_resultado_comparativa.insert("end", "• Ejercicios realizados en ambas fechas (mejor serie):\n")
+            for nombre_ej in sorted(comunes):
+                # Comparamos la mejor serie de cada fecha: primero por peso y, si es igual, por repeticiones
+                peso_1, rep_1 = self.mejor_serie(ej_1[nombre_ej])
+                peso_2, rep_2 = self.mejor_serie(ej_2[nombre_ej])
+                if peso_2 > peso_1:
+                    prog = f"↗ Progreso +{peso_2 - peso_1:.1f}kg"
+                elif peso_2 < peso_1:
+                    prog = f"↘ Menor carga {peso_2 - peso_1:.1f}kg"
+                elif rep_2 > rep_1:
+                    prog = f"↗ Progreso +{rep_2 - rep_1} reps"
+                elif rep_2 < rep_1:
+                    prog = f"↘ {rep_2 - rep_1} reps"
+                else:
+                    prog = "= Igual"
+                self.txt_resultado_comparativa.insert("end", f"   - {nombre_ej}: {self.texto_peso(peso_1)} x {rep_1} ➔ {self.texto_peso(peso_2)} x {rep_2} ({prog})\n")
         else:
             self.txt_resultado_comparativa.insert("end", "• No se repitieron los mismos ejercicios entre estas dos fechas.\n")
+
+    def mejor_serie(self, series):
+        """Devuelve la mejor serie (peso, repeticiones): la de mayor peso y, si hay empate, la de más repeticiones."""
+        mejor_peso, mejor_reps = series[0]
+        for peso, reps in series:
+            if peso > mejor_peso or (peso == mejor_peso and reps > mejor_reps):
+                mejor_peso, mejor_reps = peso, reps
+        return mejor_peso, mejor_reps
+
+    def texto_peso(self, peso):
+        """Muestra el peso de una serie. Si es 0 kg es un ejercicio con peso corporal."""
+        if peso == 0:
+            return "peso corporal"
+        return f"{peso}kg"
 
     def pedir_analisis_ia(self):
         if not self.fn_analizar_ia:
@@ -1421,13 +1712,25 @@ class VentanaVerSeguimiento(ctk.CTkFrame):
             self.txt_ia.insert("end", "\n⚠ Necesitas tener al menos una serie registrada para que la IA pueda analizar tu progreso.\n")
             return
 
+        # Mientras la IA responde: bloqueamos el botón (para que no se toque dos veces),
+        # cambiamos su texto y ponemos el cursor de espera, así el usuario sabe que está trabajando
+        self.btn_ia.configure(state="disabled", text="⏳ Analizando... (unos segundos)")
+        self.app.configure(cursor="watch")
         self.txt_ia.delete("1.0", "end")
-        self.txt_ia.insert("end", "⏳ Analizando tu rendimiento con la IA de Gemini... Por favor espera unos segundos...\n\n")
+        self.txt_ia.insert("end", "⏳ Analizando tu rendimiento con la IA de Gemini...\nEsto suele tardar menos de 10 segundos (puede tardar más si los servidores de Google están saturados). La ventana va a quedar quieta mientras tanto, no la cierres.\n\n")
         self.update()
 
         informe_ia = self.fn_analizar_ia(registros, self.nombre_usuario)
-        
+
+        # Volvemos el botón y el cursor a la normalidad
+        self.btn_ia.configure(state="normal", text="Analizar Rendimiento")
+        self.app.configure(cursor="")
+
         self.txt_ia.delete("1.0", "end")
+        # Si la IA devolvió un error (empieza con [!]) lo mostramos sin el título del informe
+        if informe_ia.startswith("[!]"):
+            self.txt_ia.insert("end", informe_ia)
+            return
         self.txt_ia.insert("end", "=== ANÁLISIS DE RENDIMIENTO GENERADO POR IA ===\n\n")
         self.txt_ia.insert("end", informe_ia)
         self.txt_ia.insert("end", "\n\n(El informe también se guardó automáticamente en tu archivo de texto local).")
@@ -1443,7 +1746,7 @@ class VentanaInformacionPersonal(ctk.CTkFrame):
         # Guardamos el callback para avisarle a la ventana principal cuando se guarden cambios
         self.fn_callback_actualizar = fn_callback_actualizar
 
-        # Encabezado: botón '< Volver' a la izquierda y el título de la sección
+        # Encabezado: botón '◀ Volver' a la izquierda y el título de la sección
         crear_encabezado(self, "Mi Perfil", self.app.volver_pantalla, tamaño_letra=18)
         # usuario_actual es un objeto Usuario, por eso usamos sus atributos
         ctk.CTkLabel(self, text=f"DNI (No editable): {usuario_actual.dni}", font=("Arial", 12)).pack(pady=2)

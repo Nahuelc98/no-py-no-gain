@@ -23,9 +23,12 @@ from nopy_db import (
     registrar_serie_entrenamiento_db,
     obtener_series_ejercicio_fecha_db,
     obtener_ultima_fecha_ejercicio_db,
+    obtener_ultimo_dia_entrenado_db,
     obtener_seguimiento_usuario_db,
     obtener_fechas_entrenadas_db,
     obtener_registros_por_fecha_db,
+    obtener_dias_rutina_por_fecha_db,
+    obtener_grupos_por_fecha_db,
     registrar_accion_usuario
 )
 import nopy_interfaz as gui
@@ -51,14 +54,18 @@ def fn_obtener_detalle_rutina(id_rutina, dni_usuario): return obtener_detalle_ru
 def fn_eliminar_rutina(id_rutina, dni_usuario): return eliminar_rutina_db(conexion, id_rutina, dni_usuario)
 def fn_obtener_dias(id_rutina): return obtener_dias_de_rutina(conexion, id_rutina)
 def fn_obtener_ejercicios_dia(id_rutina_dia): return obtener_ejercicios_de_dia(conexion, id_rutina_dia)
-def fn_registrar_serie(dni_usuario, id_ejercicio, fecha, serie_num, peso, reps): 
-    return registrar_serie_entrenamiento_db(conexion, dni_usuario, id_ejercicio, fecha, serie_num, peso, reps)
+def fn_registrar_serie(dni_usuario, id_ejercicio, fecha, serie_num, peso, reps, id_rutina=None, numero_dia=None):
+    return registrar_serie_entrenamiento_db(conexion, dni_usuario, id_ejercicio, fecha, serie_num, peso, reps, id_rutina, numero_dia)
 def fn_obtener_series_fecha(dni_usuario, id_ejercicio, fecha): return obtener_series_ejercicio_fecha_db(conexion, dni_usuario, id_ejercicio, fecha)
 def fn_obtener_ultima_fecha(dni_usuario, id_ejercicio, fecha_actual): return obtener_ultima_fecha_ejercicio_db(conexion, dni_usuario, id_ejercicio, fecha_actual)
+def fn_obtener_ultimo_dia(dni_usuario, id_rutina): return obtener_ultimo_dia_entrenado_db(conexion, dni_usuario, id_rutina)
 def fn_obtener_seguimiento(dni_usuario): return obtener_seguimiento_usuario_db(conexion, dni_usuario)
 def fn_obtener_fechas_entrenadas(dni_usuario): return obtener_fechas_entrenadas_db(conexion, dni_usuario)
 def fn_obtener_registros_fecha(dni_usuario, fecha): return obtener_registros_por_fecha_db(conexion, dni_usuario, fecha)
-def fn_analizar_ia(registros, nombre_usuario): return analizar_rendimiento_usuario(registros, nombre_usuario)
+def fn_obtener_dias_por_fecha(dni_usuario): return obtener_dias_rutina_por_fecha_db(conexion, dni_usuario)
+def fn_obtener_grupos_por_fecha(dni_usuario): return obtener_grupos_por_fecha_db(conexion, dni_usuario)
+# A la IA le pasamos también el usuario con sesión iniciada (objeto Usuario) para que use sus datos personales
+def fn_analizar_ia(registros, nombre_usuario): return analizar_rendimiento_usuario(registros, nombre_usuario, app.usuario_actual)
 def fn_registrar_accion(accion, dni="Sin DNI", nombre="Invitado"): registrar_accion_usuario(accion, dni, nombre)
 
 def abrir_gestionar_rutina():
@@ -80,7 +87,8 @@ def abrir_realizar_rutina():
             app, app.usuario_actual.dni,
             fn_obtener_rutinas, fn_obtener_dias, fn_registrar_serie,
             fn_obtener_ejercicios_dia,
-            fn_obtener_series_fecha, fn_obtener_ultima_fecha
+            fn_obtener_series_fecha, fn_obtener_ultima_fecha,
+            fn_obtener_ultimo_dia
         )
 
 def abrir_ver_seguimiento():
@@ -91,7 +99,8 @@ def abrir_ver_seguimiento():
         gui.VentanaVerSeguimiento(
             app, app.usuario_actual.dni,
             fn_obtener_seguimiento, fn_obtener_fechas_entrenadas, fn_obtener_registros_fecha,
-            fn_analizar_ia, nombre_completo
+            fn_analizar_ia, nombre_completo,
+            fn_obtener_dias_por_fecha, fn_obtener_grupos_por_fecha
         )
 
 def abrir_informacion_personal():
