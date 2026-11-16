@@ -607,7 +607,8 @@ class VentanaMisRutinas(ctk.CTkFrame):
         # Cada rutina es un objeto Rutina: la lista muestra su nombre y el ID queda en el diccionario
         self.mapa_rutinas = {}
         for r in rutinas:
-            texto = texto_unico(f"{r.nombre_rutina} ({r.cantidad_dias} días)", self.mapa_rutinas)
+            # texto_dias() de la clase Rutina devuelve "1 día" o "N días"
+            texto = texto_unico(f"{r.nombre_rutina} ({r.texto_dias()})", self.mapa_rutinas)
             self.mapa_rutinas[texto] = r.id_rutina
         opciones = list(self.mapa_rutinas.keys()) if self.mapa_rutinas else ["No tenés rutinas creadas"]
         self.combo_rutinas.configure(values=opciones)
@@ -632,7 +633,9 @@ class VentanaMisRutinas(ctk.CTkFrame):
             self.txt_detalle.insert("end", "No se pudo cargar la rutina.")
             return
 
-        self.txt_detalle.insert("end", f"{detalle['nombre_rutina']} ({detalle['cantidad_dias']} días)\n\n")
+        # "1 día" en singular y "N días" en plural
+        texto_dias = "1 día" if detalle['cantidad_dias'] == 1 else f"{detalle['cantidad_dias']} días"
+        self.txt_detalle.insert("end", f"{detalle['nombre_rutina']} ({texto_dias})\n\n")
         for dia in detalle['dias']:
             self.txt_detalle.insert("end", f"Día {dia['numero_dia']} ({dia['grupo']}):\n")
             for ej in dia['ejercicios']:
@@ -1733,7 +1736,6 @@ class VentanaVerSeguimiento(ctk.CTkFrame):
             return
         self.txt_ia.insert("end", "=== ANÁLISIS DE RENDIMIENTO GENERADO POR IA ===\n\n")
         self.txt_ia.insert("end", informe_ia)
-        self.txt_ia.insert("end", "\n\n(El informe también se guardó automáticamente en tu archivo de texto local).")
 
 
 class VentanaInformacionPersonal(ctk.CTkFrame):

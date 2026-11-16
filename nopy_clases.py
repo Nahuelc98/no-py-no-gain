@@ -58,8 +58,14 @@ class Rutina:
         self.nombre_rutina = nombre_rutina
         self.cantidad_dias = cantidad_dias
 
+    def texto_dias(self):
+        """Devuelve la cantidad de días en singular o plural. Ej: '1 día' o '3 días'."""
+        if self.cantidad_dias == 1:
+            return "1 día"
+        return f"{self.cantidad_dias} días"
+
     def __str__(self):
-        return f"Rutina: {self.nombre_rutina} ({self.cantidad_dias} días)"
+        return f"Rutina: {self.nombre_rutina} ({self.texto_dias()})"
 
 
 class RegistroEntrenamiento:

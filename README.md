@@ -158,8 +158,6 @@ Tiene tres opciones:
   - La IA lee los **datos personales** del usuario (nombre, sexo, peso, altura e IMC; **el DNI no se envía**) y **todos sus registros de entrenamiento**.
   - Devuelve un informe con: **conclusiones generales, puntos fuertes, puntos débiles, consejos para mejorar y una conclusión final**, basado solo en esos datos.
   - Suele tardar menos de 10 segundos (la ventana queda quieta mientras tanto). Si un modelo de Gemini no responde en 30 segundos o fue dado de baja, la aplicación prueba automáticamente con otro (`gemini-flash-lite-latest`, `gemini-3.5-flash` y `gemini-flash-latest`).
-  - El informe también se guarda en un archivo `analisis_<nombre>.txt` en la carpeta del proyecto (este archivo no se sube a GitHub).
-
 #### 4. Información Personal
 - Ver y editar nombre, apellido, peso, altura y sexo (el DNI no se puede editar).
 - Muestra el **IMC** (Índice de Masa Corporal) calculado con el peso y la altura.
@@ -202,7 +200,7 @@ Reglas importantes:
 | `claves_nopy.py` | Contraseña de MySQL y API key (**no se sube a GitHub**, se crea a mano). |
 | `accion_usuario.txt` | Registro de acciones de los usuarios. |
 | `nopy-nogain.png` | Logo de la aplicación. |
-| `.gitignore` | Archivos que no se suben a GitHub (claves, caché de Python e informes de la IA). |
+| `.gitignore` | Archivos que no se suben a GitHub (claves y caché de Python). |
 | `nopy-nogain.sql` | Script que crea la base de datos, sus tablas y los ejercicios precargados. |
 
 ---

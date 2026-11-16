@@ -3,7 +3,6 @@ Módulo de Integración con IA para 'No py, no gain'
 Procesa los registros de entrenamiento del usuario y genera un análisis de rendimiento.
 """
 
-import os
 from google import genai  # Importamos librería de gemini ia.
 from google.genai import types  # Para configurar el tiempo máximo de espera
 # Asegúrate de crear este archivo con tu clave o importarla de donde corresponda
@@ -129,17 +128,9 @@ Reglas:
             print(f"[OK] Respuesta generada con el modelo '{modelo}'.")
             print(response.text)
 
-            # Escribimos la respuesta de la IA en un archivo .txt local
             # Limpiamos los símbolos de formato (**, #, $...) para que se lea bien en la interfaz
+            # y devolvemos el informe para mostrarlo en pantalla
             respuesta = limpiar_formato(str(response.text))
-            # El archivo se guarda en la carpeta del proyecto (no importa desde dónde se ejecute la app)
-            dir_actual = os.path.dirname(os.path.abspath(__file__))
-            nombre_archivo = f"analisis_{nombre_usuario.lower().replace(' ', '_')}.txt"
-            ruta_archivo = os.path.join(dir_actual, nombre_archivo)
-            with open(ruta_archivo, "w", encoding="utf-8") as archivo_txt:
-                archivo_txt.write(respuesta)
-
-            print(f"\n[OK] Análisis guardado exitosamente en '{nombre_archivo}'.")
             return respuesta
         except Exception as e:
             # Guardamos el error y seguimos con el próximo modelo de la lista

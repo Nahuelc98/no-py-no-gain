@@ -54,3 +54,5 @@ DNI: 40964940 | Nombre y Apellido: Nahuel Cuello | Fecha y Hora: 15/11/2026 02:2
 DNI: 40964940 | Nombre y Apellido: Nahuel Cuello | Fecha y Hora: 15/11/2026 03:21:30 | CERRÓ SESIÓN
 DNI: 40123123 | Nombre y Apellido: Martín Prueba | Fecha y Hora: 15/11/2026 03:34:13 | INICIÓ SESIÓN
 DNI: 40123123 | Nombre y Apellido: Martín Prueba | Fecha y Hora: 15/11/2026 03:35:59 | CERRÓ SESIÓN
+DNI: 40964940 | Nombre y Apellido: Nahuel Cuello | Fecha y Hora: 16/11/2026 12:04:01 | INICIÓ SESIÓN
+DNI: 40964940 | Nombre y Apellido: Nahuel Cuello | Fecha y Hora: 16/11/2026 12:08:17 | CERRÓ SESIÓN
