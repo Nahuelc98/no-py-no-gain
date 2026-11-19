@@ -1,6 +1,5 @@
 """
-Módulo de Interfaz Gráfica (CustomTkinter) para 'No py, no gain'
-Diseñado e implementado según el diagrama de flujo oficial del proyecto.
+Módulo de Interfaz Gráfica (CustomTkinter) para 'No py, no gain'.
 """
 
 import os
@@ -17,25 +16,24 @@ ctk.set_default_color_theme("blue")
 GRUPOS_MUSCULARES = ["Piernas", "Pecho", "Espalda", "Hombros", "Bíceps", "Tríceps", "Abdomen"]
 TIPOS_EJERCICIO = ["Libre", "Máquina"]
 
-# Colores característicos de la imagen del logo (adaptados para modo oscuro)
-COLOR_AZUL_NOPY = "#4B8BBE"
-COLOR_AMARILLO_NOPY = "#EFBA1C"
-
-# Colores de botones de la interfaz
-COLOR_VERDE_BOTON = "#2BA535"       # Botones de acción positiva (guardar, ingresar, registrar)
-COLOR_VERDE_HOVER = "#3DC94A"       # Hover del verde (un poco más claro)
-COLOR_ROJO_BOTON = "#C0392B"        # Botones de acción negativa (eliminar, cerrar sesión)
-COLOR_ROJO_HOVER = "#E74C3C"        # Hover del rojo (un poco más claro)
-COLOR_AZUL_BOTON = "#2980B9"        # Botones de navegación (comenzar entrenar, ver seguimiento)
-COLOR_AZUL_HOVER = "#3FA3D8"        # Hover del azul (un poco más claro)
-COLOR_NARANJA_BOTON = "#F39C12"     # Botones de edición
-COLOR_NARANJA_HOVER = "#F5B942"     # Hover del naranja (un poco más claro)
-COLOR_GRIS_BOTON = "#555555"        # Botones secundarios (cerrar ventana, cancelar)
-COLOR_GRIS_HOVER = "#777777"        # Hover del gris (un poco más claro)
-COLOR_VIOLETA_BOTON = "#8E44AD"     # Color violeta (disponible para botones)
-COLOR_VIOLETA_HOVER = "#A569BD"     # Hover del violeta (un poco más claro)
-COLOR_AMARILLO_OSCURO = "#8A7419"   # Días comparables con la Fecha 1 en el calendario de Ver Seguimiento
-COLOR_AMARILLO_OSCURO_HOVER = "#A88E22"  # Hover del amarillo oscuro (un poco más claro)
+# Paleta de colores:
+verde = "#2BA535"                   
+verde_hover = "#3DC94A"             
+rojo = "#C0392B"                    
+rojo_hover = "#E74C3C"             
+azul = "#2980B9"                    
+azul_hover = "#3FA3D8"              
+azul_claro = "#4B8BBE"              
+amarillo = "#EFBA1C"               
+amarillo_hover = "#F5CD4F"         
+naranja = "#F39C12"                 
+naranja_hover = "#F5B942"           
+gris = "#555555"                    
+gris_hover = "#777777"              
+violeta = "#8E44AD"                 
+violeta_hover = "#A569BD"           
+amarillo_oscuro = "#8A7419"         
+amarillo_oscuro_hover = "#A88E22"   
 
 def habilitar_scroll_fluido(ventana, scrollable_frame):
     """
@@ -129,7 +127,7 @@ def texto_unico(texto, diccionario):
     return nuevo_texto
 
 
-def crear_encabezado(contenedor, titulo, comando_volver, tamaño_letra=20, pady=10):
+def crear_encabezado(contenedor, titulo, comando_volver, tamaño_letra=20, pady=(10, 10)):
     """
     Crea el encabezado de una sección: el botón '◀ Volver' en la esquina superior izquierda
     y el título de la sección a su derecha (centrado).
@@ -138,7 +136,7 @@ def crear_encabezado(contenedor, titulo, comando_volver, tamaño_letra=20, pady=
     frame_encabezado.pack(fill="x", pady=pady)
 
     # Botón para volver al menú principal (a la izquierda del título)
-    ctk.CTkButton(frame_encabezado, text="◀ Volver", command=comando_volver, width=75, fg_color=COLOR_GRIS_BOTON, hover_color=COLOR_GRIS_HOVER).pack(side="left", padx=5)
+    ctk.CTkButton(frame_encabezado, text="◀ Volver", command=comando_volver, width=75, fg_color=gris, hover_color=gris_hover).pack(side="left", padx=5)
 
     # Espacio vacío del mismo ancho que el botón (a la derecha) para que el título quede centrado
     ctk.CTkLabel(frame_encabezado, text="", width=75).pack(side="right", padx=5)
@@ -147,13 +145,13 @@ def crear_encabezado(contenedor, titulo, comando_volver, tamaño_letra=20, pady=
     ctk.CTkLabel(frame_encabezado, text=titulo, font=("Arial", tamaño_letra, "bold"), wraplength=200).pack(side="left", expand=True)
 
 
-# NOTA: Todas las "Ventana..." ahora son paneles (CTkFrame) que se muestran DENTRO
-# de la ventana principal, en lugar de abrir ventanas nuevas (CTkToplevel).
+# Todas las clases "Ventana..." son paneles (CTkFrame) que se muestran dentro
+# de la ventana principal, así toda la aplicación funciona en una sola ventana.
 # winfo_toplevel() devuelve la ventana principal (App) a la que pertenece el parent.
 
 class VentanaGestionarRutinas(ctk.CTkFrame):
     """
-    Sección "Gestionar Rutinas" (según el diagrama de flujo).
+    Sección "Gestionar Rutinas".
     Es un menú que lleva a tres subpantallas: Crear Rutina, Mis Rutinas y Mis Ejercicios.
     """
     def __init__(self, parent, dni_usuario, fn_obtener_ejercicios, fn_agregar_ejercicio, fn_guardar_rutina, fn_obtener_rutinas, fn_eliminar_rutina, fn_obtener_detalle=None, fn_actualizar_rutina=None, fn_obtener_ejercicios_propios=None, fn_actualizar_ejercicio=None, fn_eliminar_ejercicio=None):
@@ -175,22 +173,22 @@ class VentanaGestionarRutinas(ctk.CTkFrame):
         self.fn_eliminar_ejercicio = fn_eliminar_ejercicio
 
         # Encabezado: botón '◀ Volver' a la izquierda y el título de la sección
-        crear_encabezado(self, "Gestionar Rutinas", self.app.volver_pantalla, pady=20)
+        crear_encabezado(self, "Gestionar Rutinas", self.app.volver_pantalla, pady=(20, 20))
 
         # Botones que llevan a cada subpantalla
         ctk.CTkButton(
             self, text="Crear Rutina", command=self.abrir_crear_rutina, width=280, height=45,
-            font=("Arial", 13, "bold"), fg_color=COLOR_VERDE_BOTON, hover_color=COLOR_VERDE_HOVER
+            font=("Arial", 13, "bold"), fg_color=verde, hover_color=verde_hover
         ).pack(pady=8)
 
         ctk.CTkButton(
             self, text="Mis Rutinas", command=self.abrir_mis_rutinas, width=280, height=45,
-            font=("Arial", 13, "bold"), fg_color=COLOR_AZUL_BOTON, hover_color=COLOR_AZUL_HOVER
+            font=("Arial", 13, "bold"), fg_color=azul, hover_color=azul_hover
         ).pack(pady=8)
 
         ctk.CTkButton(
             self, text="Mis Ejercicios", command=self.abrir_mis_ejercicios, width=280, height=45,
-            font=("Arial", 13, "bold"), fg_color=COLOR_NARANJA_BOTON, hover_color=COLOR_NARANJA_HOVER, text_color="black"
+            font=("Arial", 13, "bold"), fg_color=naranja, hover_color=naranja_hover, text_color="black"
         ).pack(pady=8)
 
         # Mostramos esta pantalla dentro de la ventana principal
@@ -282,7 +280,7 @@ class VentanaCrearRutina(ctk.CTkFrame):
         ctk.CTkLabel(frame_ej, text="Ejercicio:").pack(side="left", padx=5)
         self.combo_ejercicios = ctk.CTkOptionMenu(frame_ej, values=["Cargando..."], width=220)
         self.combo_ejercicios.pack(side="left", padx=5)
-        ctk.CTkButton(frame_ej, text="+", command=self.abrir_crear_ejercicio, width=40, fg_color=COLOR_AZUL_BOTON, hover_color=COLOR_AZUL_HOVER).pack(side="left", padx=5)
+        ctk.CTkButton(frame_ej, text="+", command=self.abrir_crear_ejercicio, width=40, fg_color=azul, hover_color=azul_hover).pack(side="left", padx=5)
 
         # Cantidad de series por ejercicio (de 1 a 10, con flechas para subir y bajar)
         frame_series = ctk.CTkFrame(self.scroll_frame, fg_color="transparent")
@@ -291,10 +289,10 @@ class VentanaCrearRutina(ctk.CTkFrame):
         self.ent_series = ctk.CTkEntry(frame_series, width=60, justify="center")
         self.ent_series.insert(0, "1")
         self.ent_series.pack(side="left", padx=5)
-        ctk.CTkButton(frame_series, text="▲", command=self.subir_series, width=32, fg_color=COLOR_GRIS_BOTON, hover_color=COLOR_GRIS_HOVER).pack(side="left", padx=2)
-        ctk.CTkButton(frame_series, text="▼", command=self.bajar_series, width=32, fg_color=COLOR_GRIS_BOTON, hover_color=COLOR_GRIS_HOVER).pack(side="left", padx=2)
+        ctk.CTkButton(frame_series, text="▲", command=self.subir_series, width=32, fg_color=gris, hover_color=gris_hover).pack(side="left", padx=2)
+        ctk.CTkButton(frame_series, text="▼", command=self.bajar_series, width=32, fg_color=gris, hover_color=gris_hover).pack(side="left", padx=2)
 
-        ctk.CTkButton(self.scroll_frame, text="Agregar Ejercicio al Día Actual", command=self.agregar_ejercicio_a_dia, width=340, fg_color=COLOR_AZUL_BOTON, hover_color=COLOR_AZUL_HOVER).pack(pady=8)
+        ctk.CTkButton(self.scroll_frame, text="Agregar Ejercicio al Día Actual", command=self.agregar_ejercicio_a_dia, width=340, fg_color=azul, hover_color=azul_hover).pack(pady=8)
 
         # Resumen de la rutina armada (todos los días)
         ctk.CTkLabel(self.scroll_frame, text="Rutina armada:", font=("Arial", 13, "bold")).pack(pady=(5, 0))
@@ -308,7 +306,7 @@ class VentanaCrearRutina(ctk.CTkFrame):
         frame_quitar.pack(pady=5)
         self.combo_quitar = ctk.CTkOptionMenu(frame_quitar, values=["Sin ejercicios en este día"], width=240)
         self.combo_quitar.pack(side="left", padx=5)
-        ctk.CTkButton(frame_quitar, text="Quitar", command=self.quitar_ejercicio, width=80, fg_color=COLOR_ROJO_BOTON, hover_color=COLOR_ROJO_HOVER).pack(side="left", padx=5)
+        ctk.CTkButton(frame_quitar, text="Quitar", command=self.quitar_ejercicio, width=80, fg_color=rojo, hover_color=rojo_hover).pack(side="left", padx=5)
 
         # Etiqueta para mostrar avisos y mensajes (separada del resumen)
         self.lbl_msg = ctk.CTkLabel(self.scroll_frame, text="", font=("Arial", 12, "bold"), wraplength=340)
@@ -316,8 +314,8 @@ class VentanaCrearRutina(ctk.CTkFrame):
 
         # Botón para guardar (sirve tanto para crear como para editar)
         texto_guardar = "✔ Guardar Cambios en Rutina" if id_rutina_editar else "✔ Guardar Rutina"
-        color_guardar = COLOR_NARANJA_BOTON if id_rutina_editar else COLOR_VERDE_BOTON
-        hover_guardar = COLOR_NARANJA_HOVER if id_rutina_editar else COLOR_VERDE_HOVER
+        color_guardar = naranja if id_rutina_editar else verde
+        hover_guardar = naranja_hover if id_rutina_editar else verde_hover
         ctk.CTkButton(self.scroll_frame, text=texto_guardar, command=self.guardar_todo, width=340, fg_color=color_guardar, hover_color=hover_guardar).pack(pady=(4, 10))
 
         # Si estamos editando, cargamos los datos de la rutina en los controles
@@ -359,7 +357,7 @@ class VentanaCrearRutina(ctk.CTkFrame):
         self.combo_dia_activo.set(opciones_dias[0])
         self.dia_actual_num = 1
 
-        # Ya NO borramos lo cargado: solo quitamos los días que quedaron fuera de la nueva cantidad
+        # Quitamos solo los días que quedaron fuera de la nueva cantidad (lo cargado en los demás días se mantiene)
         dias_que_quedan = []
         dias_quitados = []
         for dia in self.dias_rutina:
@@ -372,7 +370,7 @@ class VentanaCrearRutina(ctk.CTkFrame):
         self.actualizar_texto_resumen()
         self.actualizar_lista_quitar()
         if dias_quitados:
-            self.mostrar_mensaje(f"⚠ Se quitaron los ejercicios del Día {', '.join(dias_quitados)} porque la rutina ahora tiene {self.total_dias} días.", COLOR_NARANJA_BOTON)
+            self.mostrar_mensaje(f"⚠ Se quitaron los ejercicios del Día {', '.join(dias_quitados)} porque la rutina ahora tiene {self.total_dias} días.", naranja)
 
     def seleccionar_dia_activo(self, seleccion):
         if "Día" in seleccion:
@@ -423,12 +421,12 @@ class VentanaCrearRutina(ctk.CTkFrame):
         seleccion = self.combo_ejercicios.get()
         series_str = self.ent_series.get().strip()
         if not series_str.isdigit() or int(series_str) < 1 or int(series_str) > 10:
-            self.mostrar_mensaje("⚠ La cantidad de series debe ser un número entre 1 y 10.", COLOR_NARANJA_BOTON)
+            self.mostrar_mensaje("⚠ La cantidad de series debe ser un número entre 1 y 10.", naranja)
             return
         # Buscamos el objeto Ejercicio elegido en el diccionario de la lista
         ejercicio = self.mapa_ejercicios.get(seleccion)
         if not ejercicio:
-            self.mostrar_mensaje("⚠ Seleccione un ejercicio válido.", COLOR_NARANJA_BOTON)
+            self.mostrar_mensaje("⚠ Seleccione un ejercicio válido.", naranja)
             return
 
         id_ej = ejercicio.id_ejercicio
@@ -481,7 +479,7 @@ class VentanaCrearRutina(ctk.CTkFrame):
         seleccion = self.combo_quitar.get()
         dia = self.buscar_dia(self.dia_actual_num)
         if not dia or seleccion not in self.mapa_quitar:
-            self.mostrar_mensaje("⚠ No hay ejercicios para quitar en este día.", COLOR_NARANJA_BOTON)
+            self.mostrar_mensaje("⚠ No hay ejercicios para quitar en este día.", naranja)
             return
 
         # Buscamos en el diccionario la posición del ejercicio dentro del día
@@ -493,12 +491,12 @@ class VentanaCrearRutina(ctk.CTkFrame):
 
         self.actualizar_texto_resumen()
         self.actualizar_lista_quitar()
-        self.mostrar_mensaje(f"Se quitó {quitado['nombre']} del Día {self.dia_actual_num}.", COLOR_NARANJA_BOTON)
+        self.mostrar_mensaje(f"Se quitó {quitado['nombre']} del Día {self.dia_actual_num}.", naranja)
 
     def guardar_todo(self):
         nom_rutina = self.ent_nombre_rutina.get().strip()
         if not nom_rutina:
-            self.mostrar_mensaje("⚠ Falta ponerle un nombre a la rutina.", COLOR_NARANJA_BOTON)
+            self.mostrar_mensaje("⚠ Falta ponerle un nombre a la rutina.", naranja)
             return
 
         # Verificamos que TODOS los días tengan al menos un ejercicio
@@ -508,7 +506,7 @@ class VentanaCrearRutina(ctk.CTkFrame):
             if not dia or not dia['ejercicios']:
                 dias_vacios.append(str(numero))
         if dias_vacios:
-            self.mostrar_mensaje(f"⚠ Faltan ejercicios en el Día {', '.join(dias_vacios)}.", COLOR_NARANJA_BOTON)
+            self.mostrar_mensaje(f"⚠ Faltan ejercicios en el Día {', '.join(dias_vacios)}.", naranja)
             return
 
         # El grupo muscular de cada día se arma con los grupos de sus ejercicios (ej: "Pecho, Tríceps")
@@ -524,17 +522,21 @@ class VentanaCrearRutina(ctk.CTkFrame):
 
         # Si estamos editando una rutina existente:
         if self.id_rutina_editando:
-            exito = self.fn_actualizar_rutina(self.id_rutina_editando, self.dni_usuario, nom_rutina, self.dias_rutina)
+            exito = False
+            if self.fn_actualizar_rutina:
+                exito = self.fn_actualizar_rutina(self.id_rutina_editando, self.dni_usuario, nom_rutina, self.dias_rutina)
             if exito:
                 # Avisamos a "Mis Rutinas" y volvemos a esa pantalla
                 if self.fn_al_guardar:
                     self.fn_al_guardar()
                 self.app.volver_pantalla()
             else:
-                self.mostrar_mensaje("❌ No se pudo actualizar la rutina.", COLOR_ROJO_HOVER)
+                self.mostrar_mensaje("❌ No se pudo actualizar la rutina.", rojo_hover)
         else:
             # Si estamos creando una rutina nueva:
-            exito = self.fn_guardar_rutina(self.dni_usuario, nom_rutina, self.dias_rutina)
+            exito = False
+            if self.fn_guardar_rutina:
+                exito = self.fn_guardar_rutina(self.dni_usuario, nom_rutina, self.dias_rutina)
             if exito:
                 # Limpiamos el formulario para poder crear otra rutina
                 self.ent_nombre_rutina.delete(0, "end")
@@ -542,7 +544,7 @@ class VentanaCrearRutina(ctk.CTkFrame):
                 self.cambiar_cantidad_dias(self.combo_cantidad_dias.get())
                 self.mostrar_mensaje(f"✔ ¡Rutina '{nom_rutina}' creada con éxito! La podés ver en 'Mis Rutinas'.", "#2ECC71")
             else:
-                self.mostrar_mensaje("❌ No se pudo guardar la rutina.", COLOR_ROJO_HOVER)
+                self.mostrar_mensaje("❌ No se pudo guardar la rutina.", rojo_hover)
 
 
 class VentanaMisRutinas(ctk.CTkFrame):
@@ -580,8 +582,8 @@ class VentanaMisRutinas(ctk.CTkFrame):
         # Acciones sobre la rutina elegida: Editar o Eliminar
         frame_acciones = ctk.CTkFrame(self, fg_color="transparent")
         frame_acciones.pack(pady=5)
-        ctk.CTkButton(frame_acciones, text="Editar Rutina", command=self.editar_rutina, fg_color=COLOR_NARANJA_BOTON, hover_color=COLOR_NARANJA_HOVER, text_color="black", width=160).pack(side="left", padx=5)
-        self.btn_eliminar = ctk.CTkButton(frame_acciones, text="Eliminar Rutina", command=self.eliminar_rutina, fg_color=COLOR_ROJO_BOTON, hover_color=COLOR_ROJO_HOVER, width=160)
+        ctk.CTkButton(frame_acciones, text="Editar Rutina", command=self.editar_rutina, fg_color=naranja, hover_color=naranja_hover, text_color="black", width=160).pack(side="left", padx=5)
+        self.btn_eliminar = ctk.CTkButton(frame_acciones, text="Eliminar Rutina", command=self.eliminar_rutina, fg_color=rojo, hover_color=rojo_hover, width=160)
         self.btn_eliminar.pack(side="left", padx=5)
 
         # Etiqueta para mostrar avisos y mensajes
@@ -646,11 +648,11 @@ class VentanaMisRutinas(ctk.CTkFrame):
         """Abre la subpantalla de Crear Rutina con los datos de la rutina elegida (modo edición)."""
         id_rutina = self.obtener_id_seleccionado()
         if id_rutina is None:
-            self.mostrar_mensaje("⚠ No hay ninguna rutina para editar.", COLOR_NARANJA_BOTON)
+            self.mostrar_mensaje("⚠ No hay ninguna rutina para editar.", naranja)
             return
         detalle = self.fn_obtener_detalle(id_rutina, self.dni_usuario)
         if not detalle:
-            self.mostrar_mensaje("❌ No se pudo cargar la rutina.", COLOR_ROJO_HOVER)
+            self.mostrar_mensaje("❌ No se pudo cargar la rutina.", rojo_hover)
             return
         VentanaCrearRutina(
             self, self.dni_usuario, self.fn_obtener_ejercicios, self.fn_agregar_ejercicio,
@@ -667,14 +669,14 @@ class VentanaMisRutinas(ctk.CTkFrame):
         """Elimina la rutina elegida. Pide confirmación tocando el botón dos veces."""
         id_rutina = self.obtener_id_seleccionado()
         if id_rutina is None:
-            self.mostrar_mensaje("⚠ No hay ninguna rutina para eliminar.", COLOR_NARANJA_BOTON)
+            self.mostrar_mensaje("⚠ No hay ninguna rutina para eliminar.", naranja)
             return
 
-        # Primer clic: pedimos confirmación (sin abrir ventanas nuevas)
+        # Primer clic: pedimos confirmación
         if self.id_para_confirmar != id_rutina:
             self.id_para_confirmar = id_rutina
             self.btn_eliminar.configure(text="Confirmar eliminación")
-            self.mostrar_mensaje("⚠ ¿Seguro? Tocá 'Confirmar eliminación' para borrar la rutina. Tu historial de entrenamiento no se borra.", COLOR_NARANJA_BOTON)
+            self.mostrar_mensaje("⚠ ¿Seguro? Tocá 'Confirmar eliminación' para borrar la rutina. Tu historial de entrenamiento no se borra.", naranja)
             return
 
         # Segundo clic: eliminamos (la función de DB valida que la rutina sea del usuario)
@@ -682,7 +684,7 @@ class VentanaMisRutinas(ctk.CTkFrame):
             self.cargar_rutinas()
             self.mostrar_mensaje("✔ Rutina eliminada.", "#2ECC71")
         else:
-            self.mostrar_mensaje("❌ No se pudo eliminar la rutina.", COLOR_ROJO_HOVER)
+            self.mostrar_mensaje("❌ No se pudo eliminar la rutina.", rojo_hover)
 
 
 class VentanaMisEjercicios(ctk.CTkFrame):
@@ -710,7 +712,7 @@ class VentanaMisEjercicios(ctk.CTkFrame):
         # Encabezado: botón '◀ Volver' a la izquierda y el título de la sección
         crear_encabezado(self, "Mis Ejercicios", self.app.volver_pantalla)
 
-        ctk.CTkButton(self, text="+ Crear Ejercicio Nuevo", command=self.crear_ejercicio, width=340, fg_color=COLOR_VERDE_BOTON, hover_color=COLOR_VERDE_HOVER).pack(pady=5)
+        ctk.CTkButton(self, text="+ Crear Ejercicio Nuevo", command=self.crear_ejercicio, width=340, fg_color=verde, hover_color=verde_hover).pack(pady=5)
 
         ctk.CTkLabel(self, text="Seleccioná un ejercicio:", font=("Arial", 12, "bold")).pack(pady=(10, 0))
         self.combo_ejercicios = ctk.CTkOptionMenu(self, values=["Cargando..."], command=self.cambiar_seleccion, width=340)
@@ -719,8 +721,8 @@ class VentanaMisEjercicios(ctk.CTkFrame):
         # Acciones sobre el ejercicio elegido: Editar o Eliminar
         frame_acciones = ctk.CTkFrame(self, fg_color="transparent")
         frame_acciones.pack(pady=5)
-        ctk.CTkButton(frame_acciones, text="Editar", command=self.editar_ejercicio, fg_color=COLOR_NARANJA_BOTON, hover_color=COLOR_NARANJA_HOVER, text_color="black", width=160).pack(side="left", padx=5)
-        self.btn_eliminar = ctk.CTkButton(frame_acciones, text="Eliminar", command=self.eliminar_ejercicio, fg_color=COLOR_ROJO_BOTON, hover_color=COLOR_ROJO_HOVER, width=160)
+        ctk.CTkButton(frame_acciones, text="Editar", command=self.editar_ejercicio, fg_color=naranja, hover_color=naranja_hover, text_color="black", width=160).pack(side="left", padx=5)
+        self.btn_eliminar = ctk.CTkButton(frame_acciones, text="Eliminar", command=self.eliminar_ejercicio, fg_color=rojo, hover_color=rojo_hover, width=160)
         self.btn_eliminar.pack(side="left", padx=5)
 
         # Etiqueta para mostrar avisos y mensajes
@@ -783,7 +785,7 @@ class VentanaMisEjercicios(ctk.CTkFrame):
         """Abre la pantalla para editar el ejercicio elegido (con sus datos ya cargados)."""
         ejercicio = self.buscar_ejercicio_seleccionado()
         if not ejercicio:
-            self.mostrar_mensaje("⚠ No hay ningún ejercicio para editar.", COLOR_NARANJA_BOTON)
+            self.mostrar_mensaje("⚠ No hay ningún ejercicio para editar.", naranja)
             return
         VentanaEditarEjercicioModal(self, ejercicio.id_ejercicio, self.dni_usuario, self.fn_actualizar_ejercicio, self.ejercicio_editado, ejercicio)
 
@@ -795,14 +797,14 @@ class VentanaMisEjercicios(ctk.CTkFrame):
         """Elimina (baja lógica) el ejercicio elegido. Pide confirmación tocando el botón dos veces."""
         ejercicio = self.buscar_ejercicio_seleccionado()
         if not ejercicio:
-            self.mostrar_mensaje("⚠ No hay ningún ejercicio para eliminar.", COLOR_NARANJA_BOTON)
+            self.mostrar_mensaje("⚠ No hay ningún ejercicio para eliminar.", naranja)
             return
 
-        # Primer clic: pedimos confirmación (sin abrir ventanas nuevas)
+        # Primer clic: pedimos confirmación
         if self.id_para_confirmar != ejercicio.id_ejercicio:
             self.id_para_confirmar = ejercicio.id_ejercicio
             self.btn_eliminar.configure(text="Confirmar")
-            self.mostrar_mensaje(f"⚠ ¿Seguro? '{ejercicio.nombre}' se va a quitar de tus rutinas, pero tu historial de entrenamiento se conserva. Tocá 'Confirmar'.", COLOR_NARANJA_BOTON)
+            self.mostrar_mensaje(f"⚠ ¿Seguro? '{ejercicio.nombre}' se va a quitar de tus rutinas, pero tu historial de entrenamiento se conserva. Tocá 'Confirmar'.", naranja)
             return
 
         # Segundo clic: eliminamos (la función de DB valida que el ejercicio sea del usuario)
@@ -810,7 +812,7 @@ class VentanaMisEjercicios(ctk.CTkFrame):
             self.cargar_ejercicios()
             self.mostrar_mensaje(f"✔ '{ejercicio.nombre}' eliminado.", "#2ECC71")
         else:
-            self.mostrar_mensaje("❌ No se pudo eliminar. Solo podés eliminar ejercicios propios.", COLOR_ROJO_HOVER)
+            self.mostrar_mensaje("❌ No se pudo eliminar. Solo podés eliminar ejercicios propios.", rojo_hover)
 
 
 class VentanaCrearEjercicioModal(ctk.CTkFrame):
@@ -838,8 +840,8 @@ class VentanaCrearEjercicioModal(ctk.CTkFrame):
                 # Volvemos a la pantalla anterior
                 self.app.volver_pantalla()
 
-        ctk.CTkButton(self, text="Guardar Ejercicio", command=guardar, fg_color=COLOR_VERDE_BOTON, hover_color=COLOR_VERDE_HOVER, width=250).pack(pady=15)
-        ctk.CTkButton(self, text="Volver", command=self.app.volver_pantalla, fg_color=COLOR_GRIS_BOTON, hover_color=COLOR_GRIS_HOVER, width=250).pack(pady=5)
+        ctk.CTkButton(self, text="Guardar Ejercicio", command=guardar, fg_color=verde, hover_color=verde_hover, width=250).pack(pady=15)
+        ctk.CTkButton(self, text="Volver", command=self.app.volver_pantalla, fg_color=gris, hover_color=gris_hover, width=250).pack(pady=5)
 
         # Mostramos esta pantalla dentro de la ventana principal
         self.app.abrir_pantalla(self)
@@ -886,14 +888,14 @@ class VentanaEditarEjercicioModal(ctk.CTkFrame):
             else:
                 self.lbl_msg.configure(text="❌ No se pudo editar. Solo podés editar ejercicios propios.")
 
-        ctk.CTkButton(self, text="Guardar Cambios", command=guardar, fg_color=COLOR_VERDE_BOTON, hover_color=COLOR_VERDE_HOVER, width=250).pack(pady=10)
-        ctk.CTkButton(self, text="Cancelar", command=self.app.volver_pantalla, fg_color=COLOR_GRIS_BOTON, hover_color=COLOR_GRIS_HOVER, width=250).pack(pady=5)
+        ctk.CTkButton(self, text="Guardar Cambios", command=guardar, fg_color=verde, hover_color=verde_hover, width=250).pack(pady=10)
+        ctk.CTkButton(self, text="Cancelar", command=self.app.volver_pantalla, fg_color=gris, hover_color=gris_hover, width=250).pack(pady=5)
 
         # Mostramos esta pantalla dentro de la ventana principal
         self.app.abrir_pantalla(self)
 
 
-# Sección "Empezar Rutina": se abre directo desde el menú principal para entrenar y registrar series
+# Sección "Empezar Rutina": se abre desde el menú principal para entrenar y registrar series
 class VentanaComenzarEntrenar(ctk.CTkFrame):
     def __init__(self, parent, dni_usuario, fn_obtener_rutinas, fn_obtener_dias, fn_registrar_serie, fn_obtener_ejercicios_dia=None, fn_obtener_series_fecha=None, fn_obtener_ultima_fecha=None, fn_obtener_ultimo_dia=None):
         app = parent.winfo_toplevel()
@@ -942,7 +944,7 @@ class VentanaComenzarEntrenar(ctk.CTkFrame):
         if not rutinas:
             ctk.CTkLabel(
                 scroll_c, text="⚠ Todavía no tenés rutinas creadas.\nCreá una desde 'Gestionar Rutina' en el menú principal.",
-                font=("Arial", 12, "bold"), text_color=COLOR_NARANJA_BOTON, wraplength=340
+                font=("Arial", 12, "bold"), text_color=naranja, wraplength=340
             ).pack(pady=(5, 10))
 
         ctk.CTkLabel(scroll_c, text="1. Seleccionar Rutina:", font=("Arial", 12, "bold")).pack(pady=(5, 0))
@@ -960,7 +962,7 @@ class VentanaComenzarEntrenar(ctk.CTkFrame):
         self.combo_ejercicios_dia.pack(pady=5)
 
         # Información del ejercicio elegido: serie actual, lo que hizo hoy y la última vez
-        self.lbl_serie_actual = ctk.CTkLabel(scroll_c, text="", font=("Arial", 14, "bold"), text_color=COLOR_AMARILLO_NOPY, wraplength=340)
+        self.lbl_serie_actual = ctk.CTkLabel(scroll_c, text="", font=("Arial", 14, "bold"), text_color=amarillo, wraplength=340)
         self.lbl_serie_actual.pack(pady=(8, 0))
         self.lbl_hoy = ctk.CTkLabel(scroll_c, text="", font=("Arial", 11), text_color="#CCCCCC", wraplength=340)
         self.lbl_hoy.pack()
@@ -976,9 +978,9 @@ class VentanaComenzarEntrenar(ctk.CTkFrame):
         ctk.CTkLabel(frame_serie, text="N° de serie:", width=110, anchor="w").pack(side="left", padx=5)
         self.ent_serie_num = ctk.CTkEntry(frame_serie, placeholder_text="ej: 1", width=148)
         self.ent_serie_num.pack(side="left", padx=5)
-        # Flechas para subir y bajar el número de serie (de 1 a 10, igual que en Crear Rutina)
-        ctk.CTkButton(frame_serie, text="▲", command=self.subir_serie, width=32, fg_color=COLOR_GRIS_BOTON, hover_color=COLOR_GRIS_HOVER).pack(side="left", padx=2)
-        ctk.CTkButton(frame_serie, text="▼", command=self.bajar_serie, width=32, fg_color=COLOR_GRIS_BOTON, hover_color=COLOR_GRIS_HOVER).pack(side="left", padx=2)
+        # Flechas para subir y bajar el número de serie (de 1 hasta las series planificadas del ejercicio)
+        ctk.CTkButton(frame_serie, text="▲", command=self.subir_serie, width=32, fg_color=gris, hover_color=gris_hover).pack(side="left", padx=2)
+        ctk.CTkButton(frame_serie, text="▼", command=self.bajar_serie, width=32, fg_color=gris, hover_color=gris_hover).pack(side="left", padx=2)
 
         frame_peso = ctk.CTkFrame(scroll_c, fg_color="transparent")
         frame_peso.pack(pady=3)
@@ -992,7 +994,7 @@ class VentanaComenzarEntrenar(ctk.CTkFrame):
         self.ent_reps = ctk.CTkEntry(frame_reps, placeholder_text="ej: 12", width=220)
         self.ent_reps.pack(side="left", padx=5)
 
-        ctk.CTkButton(scroll_c, text="✔ Guardar Registro", command=self.guardar_serie, width=340, fg_color=COLOR_VERDE_BOTON, hover_color=COLOR_VERDE_HOVER).pack(pady=10)
+        ctk.CTkButton(scroll_c, text="✔ Guardar Registro", command=self.guardar_serie, width=340, fg_color=verde, hover_color=verde_hover).pack(pady=10)
 
         self.txt_salida = ctk.CTkTextbox(scroll_c, width=350, height=120, wrap="word")
         solo_lectura(self.txt_salida)  # el usuario no puede modificar el texto
@@ -1151,7 +1153,7 @@ class VentanaComenzarEntrenar(ctk.CTkFrame):
         ultima_fecha = None
         if self.fn_obtener_ultima_fecha:
             ultima_fecha = self.fn_obtener_ultima_fecha(self.dni_usuario, id_ej, hoy)
-        if ultima_fecha:
+        if ultima_fecha and self.fn_obtener_series_fecha:
             series_ultima = self.fn_obtener_series_fecha(self.dni_usuario, id_ej, ultima_fecha)
             self.lbl_ultima_vez.configure(text=f"Última vez ({ultima_fecha.strftime('%d/%m/%Y')}): {self.texto_series(series_ultima)}")
         else:
@@ -1250,8 +1252,8 @@ class VentanaComenzarEntrenar(ctk.CTkFrame):
 
 class VentanaVerSeguimiento(ctk.CTkFrame):
     """
-    Ventana de Ver Seguimiento basada fielmente en el diagrama de flujo oficial.
-    Incorpora:
+    Pantalla de Ver Seguimiento.
+    Incluye:
     1. Calendario interactivo con formato semanal (L M M J V S D) y navegación de meses.
     2. Selección de Fecha 1 y Fecha 2.
     3. Visualización de los entrenamientos de ambas fechas.
@@ -1321,17 +1323,17 @@ class VentanaVerSeguimiento(ctk.CTkFrame):
         frame_nav = ctk.CTkFrame(self.frame_cal_contenedor, fg_color="transparent")
         frame_nav.pack(pady=8, fill="x", padx=10)
 
-        ctk.CTkButton(frame_nav, text="◀ Mes Ant.", width=90, height=28, command=self.mes_anterior, fg_color=COLOR_GRIS_BOTON, hover_color=COLOR_GRIS_HOVER).pack(side="left")
-        self.lbl_mes_año = ctk.CTkLabel(frame_nav, text="", font=("Arial", 14, "bold"), text_color=COLOR_AMARILLO_NOPY)
+        ctk.CTkButton(frame_nav, text="◀ Mes Ant.", width=90, height=28, command=self.mes_anterior, fg_color=gris, hover_color=gris_hover).pack(side="left")
+        self.lbl_mes_año = ctk.CTkLabel(frame_nav, text="", font=("Arial", 14, "bold"), text_color=amarillo)
         self.lbl_mes_año.pack(side="left", expand=True)
-        ctk.CTkButton(frame_nav, text="Mes Sig. ▶", width=90, height=28, command=self.mes_siguiente, fg_color=COLOR_GRIS_BOTON, hover_color=COLOR_GRIS_HOVER).pack(side="right")
+        ctk.CTkButton(frame_nav, text="Mes Sig. ▶", width=90, height=28, command=self.mes_siguiente, fg_color=gris, hover_color=gris_hover).pack(side="right")
 
         frame_dias_sem = ctk.CTkFrame(self.frame_cal_contenedor, fg_color="transparent")
         frame_dias_sem.pack(pady=(2, 4), padx=10)
         dias_letras = ["L", "M", "M", "J", "V", "S", "D"]
         for col_idx, letra in enumerate(dias_letras):
             # Mismo ancho que los botones de los días para que queden alineados
-            lbl_dia = ctk.CTkLabel(frame_dias_sem, text=letra, width=38, font=("Arial", 12, "bold"), text_color=COLOR_AZUL_NOPY)
+            lbl_dia = ctk.CTkLabel(frame_dias_sem, text=letra, width=38, font=("Arial", 12, "bold"), text_color=azul_claro)
             lbl_dia.grid(row=0, column=col_idx, padx=2, pady=2)
 
         self.frame_grilla_dias = ctk.CTkFrame(self.frame_cal_contenedor, fg_color="transparent")
@@ -1349,7 +1351,7 @@ class VentanaVerSeguimiento(ctk.CTkFrame):
         # Texto con los días que se pueden comparar con la Fecha 1 (misma rutina y mismo día)
         self.lbl_comparables = ctk.CTkLabel(
             self.frame_cal_contenedor, text="Elegí la Fecha 1 para ver con qué días se puede comparar.",
-            font=("Arial", 11), text_color=COLOR_AMARILLO_NOPY, wraplength=340
+            font=("Arial", 11), text_color=amarillo, wraplength=340
         )
         self.lbl_comparables.pack(pady=(0, 6))
 
@@ -1364,12 +1366,12 @@ class VentanaVerSeguimiento(ctk.CTkFrame):
 
         ctk.CTkButton(
             frame_fijar, text="Seleccionar Fecha 1", command=self.fijar_fecha_1,
-            fg_color=COLOR_AZUL_BOTON, hover_color=COLOR_AZUL_HOVER, font=("Arial", 12, "bold"), width=160
+            fg_color=azul, hover_color=azul_hover, font=("Arial", 12, "bold"), width=160
         ).pack(side="left", padx=4)
 
         ctk.CTkButton(
             frame_fijar, text="Seleccionar Fecha 2", command=self.fijar_fecha_2,
-            fg_color=COLOR_AMARILLO_NOPY, hover_color="#F5CD4F", text_color="black", font=("Arial", 12, "bold"), width=160
+            fg_color=amarillo, hover_color=amarillo_hover, text_color="black", font=("Arial", 12, "bold"), width=160
         ).pack(side="left", padx=4)
 
         # SECCIÓN 2: CARDS DE FECHA 1 Y FECHA 2 (una debajo de la otra para que entren en la ventana)
@@ -1378,7 +1380,7 @@ class VentanaVerSeguimiento(ctk.CTkFrame):
 
         self.card_f1 = ctk.CTkFrame(frame_cards, fg_color="#262626", corner_radius=8)
         self.card_f1.pack(fill="x", pady=4)
-        self.lbl_titulo_f1 = ctk.CTkLabel(self.card_f1, text="Fecha 1: (No seleccionada)", font=("Arial", 13, "bold"), text_color=COLOR_AZUL_HOVER, wraplength=330)
+        self.lbl_titulo_f1 = ctk.CTkLabel(self.card_f1, text="Fecha 1: (No seleccionada)", font=("Arial", 13, "bold"), text_color=azul_hover, wraplength=330)
         self.lbl_titulo_f1.pack(pady=5)
         self.txt_card_f1 = ctk.CTkTextbox(self.card_f1, width=340, height=110, wrap="word")
         solo_lectura(self.txt_card_f1)  # el usuario no puede modificar el texto
@@ -1386,7 +1388,7 @@ class VentanaVerSeguimiento(ctk.CTkFrame):
 
         self.card_f2 = ctk.CTkFrame(frame_cards, fg_color="#262626", corner_radius=8)
         self.card_f2.pack(fill="x", pady=4)
-        self.lbl_titulo_f2 = ctk.CTkLabel(self.card_f2, text="Fecha 2: (No seleccionada)", font=("Arial", 13, "bold"), text_color=COLOR_AMARILLO_NOPY, wraplength=330)
+        self.lbl_titulo_f2 = ctk.CTkLabel(self.card_f2, text="Fecha 2: (No seleccionada)", font=("Arial", 13, "bold"), text_color=amarillo, wraplength=330)
         self.lbl_titulo_f2.pack(pady=5)
         self.txt_card_f2 = ctk.CTkTextbox(self.card_f2, width=340, height=110, wrap="word")
         solo_lectura(self.txt_card_f2)  # el usuario no puede modificar el texto
@@ -1394,7 +1396,7 @@ class VentanaVerSeguimiento(ctk.CTkFrame):
 
         ctk.CTkButton(
             self.scroll_c, text="Comparar Fecha 1 con Fecha 2", command=self.comparar_fechas,
-            fg_color=COLOR_VERDE_BOTON, hover_color=COLOR_VERDE_HOVER, width=340, height=35, font=("Arial", 13, "bold")
+            fg_color=verde, hover_color=verde_hover, width=340, height=35, font=("Arial", 13, "bold")
         ).pack(pady=6)
 
         self.txt_resultado_comparativa = ctk.CTkTextbox(self.scroll_c, width=350, height=130, wrap="word")
@@ -1402,11 +1404,11 @@ class VentanaVerSeguimiento(ctk.CTkFrame):
         self.txt_resultado_comparativa.pack(pady=5)
 
         # SECCIÓN 3: INTELIGENCIA ARTIFICIAL (GEMINI)
-        ctk.CTkLabel(self.scroll_c, text="Análisis Inteligente", font=("Arial", 14, "bold"), text_color=COLOR_AZUL_NOPY, wraplength=340).pack(pady=(12, 4))
+        ctk.CTkLabel(self.scroll_c, text="Análisis Inteligente", font=("Arial", 14, "bold"), text_color=azul_claro, wraplength=340).pack(pady=(12, 4))
 
         self.btn_ia = ctk.CTkButton(
             self.scroll_c, text="Analizar Rendimiento", command=self.pedir_analisis_ia,
-            fg_color=COLOR_AZUL_BOTON, hover_color=COLOR_AZUL_HOVER, width=340, height=38, font=("Arial", 13, "bold")
+            fg_color=azul, hover_color=azul_hover, width=340, height=38, font=("Arial", 13, "bold")
         )
         self.btn_ia.pack(pady=5)
 
@@ -1462,13 +1464,13 @@ class VentanaVerSeguimiento(ctk.CTkFrame):
         comparables = self.dias_comparables()
         for fecha_str, btn_dia in self.botones_dias.items():
             if fecha_str == self.fecha_1:
-                btn_color, hover_color, txt_color = COLOR_AZUL_BOTON, COLOR_AZUL_HOVER, "#FFFFFF"
+                btn_color, hover_color, txt_color = azul, azul_hover, "#FFFFFF"
             elif fecha_str == self.fecha_2:
-                btn_color, hover_color, txt_color = COLOR_AMARILLO_NOPY, "#F5CD4F", "black"
+                btn_color, hover_color, txt_color = amarillo, amarillo_hover, "black"
             elif fecha_str in comparables:
-                btn_color, hover_color, txt_color = COLOR_AMARILLO_OSCURO, COLOR_AMARILLO_OSCURO_HOVER, "#FFFFFF"
+                btn_color, hover_color, txt_color = amarillo_oscuro, amarillo_oscuro_hover, "#FFFFFF"
             elif fecha_str in self.fechas_con_registro:
-                btn_color, hover_color, txt_color = COLOR_VERDE_BOTON, COLOR_VERDE_HOVER, "#FFFFFF"
+                btn_color, hover_color, txt_color = verde, verde_hover, "#FFFFFF"
             else:
                 btn_color, hover_color, txt_color = "#2E2E2E", "#444444", "#CCCCCC"
 
@@ -1754,7 +1756,7 @@ class VentanaInformacionPersonal(ctk.CTkFrame):
         ctk.CTkLabel(self, text=f"DNI (No editable): {usuario_actual.dni}", font=("Arial", 12)).pack(pady=2)
 
         # Mostramos el IMC calculado con el método de la clase Usuario
-        self.lbl_imc = ctk.CTkLabel(self, text=f"IMC actual: {usuario_actual.calcular_imc()}", font=("Arial", 12, "bold"), text_color=COLOR_AMARILLO_NOPY)
+        self.lbl_imc = ctk.CTkLabel(self, text=f"IMC actual: {usuario_actual.calcular_imc()}", font=("Arial", 12, "bold"), text_color=amarillo)
         self.lbl_imc.pack(pady=2)
 
         self.ent_nom = ctk.CTkEntry(self, width=250)
@@ -1785,7 +1787,7 @@ class VentanaInformacionPersonal(ctk.CTkFrame):
         self.lbl_msg = ctk.CTkLabel(self, text="", text_color="yellow")
         self.lbl_msg.pack(pady=2)
 
-        ctk.CTkButton(self, text="Guardar Cambios", command=self.guardar_cambios, fg_color=COLOR_VERDE_BOTON, hover_color=COLOR_VERDE_HOVER, width=250).pack(pady=10)
+        ctk.CTkButton(self, text="Guardar Cambios", command=self.guardar_cambios, fg_color=verde, hover_color=verde_hover, width=250).pack(pady=10)
 
         # Mostramos esta pantalla dentro de la ventana principal
         self.app.abrir_pantalla(self)
@@ -1855,14 +1857,14 @@ class App(ctk.CTk):
         ctk.CTkLabel(
             self.frame_slogan, 
             text="Lleva tu entrenamiento al ", 
-            text_color=COLOR_AZUL_NOPY, 
+            text_color=azul_claro, 
             font=("Arial", 15, "bold")
         ).pack(side="left", padx=(5, 0), pady=2)
 
         ctk.CTkLabel(
             self.frame_slogan, 
             text="siguiente nivel", 
-            text_color=COLOR_AMARILLO_NOPY, 
+            text_color=amarillo, 
             font=("Arial", 15, "bold")
         ).pack(side="left", padx=(0, 5), pady=2)
 
@@ -1874,7 +1876,7 @@ class App(ctk.CTk):
         self.ent_dni.pack(pady=5)
 
         ctk.CTkButton(self.frame_login, text="INGRESAR", command=self.ingresar_usuario, width=250, text_color="#FFFFFF"
-                      , fg_color=COLOR_VERDE_BOTON, hover_color=COLOR_VERDE_HOVER).pack(pady=8)
+                      , fg_color=verde, hover_color=verde_hover).pack(pady=8)
         ctk.CTkButton(
             self.frame_login, text="¿No estás registrado? Regístrate aquí", command=self.abrir_formulario_registro, 
             width=250, fg_color="transparent", border_width=1, text_color="#EEFF00"
@@ -1882,7 +1884,7 @@ class App(ctk.CTk):
 
         ctk.CTkButton(
             self.frame_login, text="Cerrar No py, no gain", command=self.cerrar_aplicacion, width=250, height=35,
-            font=("Arial", 12, "bold"), fg_color=COLOR_ROJO_BOTON, hover_color=COLOR_ROJO_HOVER
+            font=("Arial", 12, "bold"), fg_color=rojo, hover_color=rojo_hover
         ).pack(pady=(5, 10))
 
         self.lbl_estado = ctk.CTkLabel(self, text="", text_color="yellow")
@@ -1893,7 +1895,7 @@ class App(ctk.CTk):
         self.destroy()
 
     def mostrar_mensaje(self, titulo, mensaje, color_boton="#27AE60"):
-        """Muestra un aviso como texto debajo del login (sin abrir una ventana nueva)."""
+        """Muestra un aviso como texto debajo del login."""
         self.lbl_estado.configure(text=f"{titulo}\n{mensaje}", text_color=color_boton, font=("Arial", 13, "bold"), wraplength=360)
 
     def abrir_pantalla(self, pantalla):
@@ -1952,7 +1954,7 @@ class App(ctk.CTk):
 
     def abrir_formulario_registro(self):
         dni_inicial = self.ent_dni.get().strip()
-        # El registro ahora es una pantalla dentro de la misma ventana
+        # Abrimos la pantalla de registro dentro de la misma ventana
         top = ctk.CTkFrame(self, fg_color="transparent")
 
         # Mostramos el mismo logo que en la pantalla principal (si la imagen existe).
@@ -2016,8 +2018,8 @@ class App(ctk.CTk):
             except ValueError:
                 lbl_msg.configure(text="⚠ Peso y altura numéricos.")
 
-        ctk.CTkButton(top, text="Guardar Registro", command=guardar, width=250, fg_color=COLOR_VERDE_BOTON, hover_color=COLOR_VERDE_HOVER).pack(pady=10)
-        ctk.CTkButton(top, text="Cerrar Registro", command=self.volver_pantalla, width=200, fg_color=COLOR_ROJO_BOTON, hover_color=COLOR_ROJO_HOVER).pack(pady=5)
+        ctk.CTkButton(top, text="Guardar Registro", command=guardar, width=250, fg_color=verde, hover_color=verde_hover).pack(pady=10)
+        ctk.CTkButton(top, text="Cerrar Registro", command=self.volver_pantalla, width=200, fg_color=rojo, hover_color=rojo_hover).pack(pady=5)
 
         # Mostramos la pantalla de registro en lugar del login
         self.abrir_pantalla(top)
@@ -2039,7 +2041,7 @@ class App(ctk.CTk):
         ctk.CTkLabel(
             self.frame_bienvenida, 
             text="Bienvenido/a ", 
-            text_color=COLOR_AZUL_NOPY, 
+            text_color=azul_claro, 
             font=("Arial", 15, "bold")
         ).pack(side="left", padx=(5, 0), pady=1)
 
@@ -2050,7 +2052,7 @@ class App(ctk.CTk):
         ctk.CTkLabel(
             self.frame_bienvenida, 
             text=nombre_completo, 
-            text_color=COLOR_AMARILLO_NOPY, 
+            text_color=amarillo, 
             font=("Arial", 15, "bold")
         ).pack(side="left", padx=(0, 5), pady=1)
 
@@ -2063,27 +2065,27 @@ class App(ctk.CTk):
 
         ctk.CTkButton(
             self.frame_menu, text="Gestionar Rutina", command=self.abrir_gestionar_rutina_cmd, 
-            width=280, height=45, font=("Arial", 13, "bold"), fg_color=COLOR_AZUL_BOTON, hover_color=COLOR_AZUL_HOVER
+            width=280, height=45, font=("Arial", 13, "bold"), fg_color=azul, hover_color=azul_hover
         ).pack(pady=5)
 
         ctk.CTkButton(
             self.frame_menu, text="Empezar Rutina", command=self.abrir_realizar_rutina_cmd, 
-            width=280, height=45, font=("Arial", 13, "bold"), fg_color=COLOR_AZUL_BOTON, hover_color=COLOR_AZUL_HOVER
+            width=280, height=45, font=("Arial", 13, "bold"), fg_color=azul, hover_color=azul_hover
         ).pack(pady=5)
 
         ctk.CTkButton(
             self.frame_menu, text="Ver Seguimiento", command=self.abrir_ver_seguimiento_cmd, 
-            width=280, height=45, font=("Arial", 13, "bold"), fg_color=COLOR_AZUL_BOTON, hover_color=COLOR_AZUL_HOVER
+            width=280, height=45, font=("Arial", 13, "bold"), fg_color=azul, hover_color=azul_hover
         ).pack(pady=5)
 
         ctk.CTkButton(
-            self.frame_menu, text="Información Personal", command=self.abrir_informacion_personal_cmd, 
-            width=280, height=45, font=("Arial", 13, "bold"), fg_color=COLOR_NARANJA_BOTON, hover_color=COLOR_NARANJA_HOVER, text_color="black"
+            self.frame_menu, text="Mi Perfil", command=self.abrir_informacion_personal_cmd,
+            width=280, height=45, font=("Arial", 13, "bold"), fg_color=naranja, hover_color=naranja_hover, text_color="black"
         ).pack(pady=5)
 
         ctk.CTkButton(
             self.frame_menu, text="Cerrar Sesión", command=self.cerrar_sesion, 
-            width=280, height=45, font=("Arial", 13, "bold"), fg_color=COLOR_ROJO_BOTON, hover_color=COLOR_ROJO_HOVER
+            width=280, height=45, font=("Arial", 13, "bold"), fg_color=rojo, hover_color=rojo_hover
         ).pack(pady=5)
 
     def cerrar_sesion(self):

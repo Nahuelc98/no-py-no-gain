@@ -1,6 +1,6 @@
 """
 Módulo de Base de Datos para 'No py, no gain'
-Maneja la conexión a MySQL y todas las consultas CRUD del sistema.
+Maneja la conexión a MySQL y todas las consultas.
 """
 
 import os
@@ -21,10 +21,10 @@ def pedir_conexion(host, user, password, database="nopy_nogain", port=3306):
             port=port
         )
         if conexion.is_connected():
-            print("[OK] Conexión exitosa a la Base de Datos MySQL.")
+            print("Conexión exitosa a la Base de Datos MySQL.")
             return conexion
     except Error as e:
-        print(f"[X] Error al conectar a la Base de Datos: {e}")
+        print(f"Error al conectar a la Base de Datos: {e}")
         return None
 
 def obtener_ruta_txt(filename="accion_usuario.txt"):
@@ -401,7 +401,7 @@ def obtener_ultimo_dia_entrenado_db(conexion, dni_usuario, id_rutina):
             cursor.close()
             return fila
 
-        # 2. Si solo hay series viejas (sin la rutina guardada), lo buscamos por los ejercicios de cada día
+        # 2. Si las series no tienen la rutina guardada, lo buscamos por los ejercicios de cada día
         sql = """
             SELECT rd.numero_dia, r.fecha
             FROM registros_entrenamiento r
@@ -483,7 +483,7 @@ def obtener_dias_rutina_por_fecha_db(conexion, dni_usuario):
     """
     Devuelve un diccionario {fecha: (id_rutina, numero_dia, nombre_rutina)} con la rutina y el día
     que el usuario entrenó en cada fecha. Sirve para saber qué días se pueden comparar entre sí.
-    Las series viejas que no tienen guardada la rutina (NULL) no se tienen en cuenta.
+    Las series que no tienen guardada la rutina (NULL) no se tienen en cuenta.
     Si en una misma fecha entrenó dos días distintos, se toma el que tiene más series.
     """
     try:

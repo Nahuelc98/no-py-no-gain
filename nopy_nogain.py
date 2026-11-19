@@ -1,6 +1,6 @@
 """
 Módulo Principal - Punto de Entrada de 'No py, no gain'
-Vincula la base de datos, la lógica y la interfaz gráfica basada en el diagrama de flujo.
+Vincula la base de datos, la lógica y la interfaz gráfica.
 """
 
 from nopy_db import (
@@ -82,7 +82,7 @@ def abrir_gestionar_rutina():
 def abrir_realizar_rutina():
     """Abre la ventana de Empezar Rutina (para entrenar y registrar series)."""
     if app.usuario_actual:
-        # Abre directo la sesión de entrenamiento (sin pantalla intermedia)
+        # Abre la pantalla para empezar a entrenar
         gui.VentanaComenzarEntrenar(
             app, app.usuario_actual.dni,
             fn_obtener_rutinas, fn_obtener_dias, fn_registrar_serie,
@@ -123,6 +123,6 @@ if __name__ == "__main__":
 
         app.mainloop()
         conexion.close()
-        print("[OK] Conexión a MySQL cerrada correctamente.")
+        print("Conexión a MySQL cerrada correctamente.")
     else:
-        print("[X] No se pudo iniciar la aplicación por un fallo en la conexión a la Base de Datos.")
+        print("No se pudo iniciar la aplicación por un fallo en la conexión a la Base de Datos.")

@@ -1,7 +1,6 @@
 """
 Módulo de Clases (POO) para 'No py, no gain'
-Define las entidades principales del sistema alineadas con la base de datos 
-y el diagrama de flujo.
+Define las entidades principales del sistema alineadas con la base de datos.
 """
 
 class Usuario:

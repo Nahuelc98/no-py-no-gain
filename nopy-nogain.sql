@@ -12,8 +12,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     sexo VARCHAR(20)
 );
 
--- 2. Tabla de Ejercicios (Con dni_usuario como FK opcional y sin descripcion):
--- activo = TRUE: el ejercicio se muestra / activo = FALSE: fue "eliminado" (baja lógica, se conserva el historial)
+-- 2. Tabla de Ejercicios:
 CREATE TABLE IF NOT EXISTS ejercicios (
     id_ejercicio INT AUTO_INCREMENT PRIMARY KEY,
     dni_usuario VARCHAR(20) DEFAULT NULL,
@@ -42,7 +41,7 @@ CREATE TABLE IF NOT EXISTS rutina_dias (
     FOREIGN KEY (id_rutina) REFERENCES rutinas(id_rutina) ON DELETE CASCADE
 );
 
--- 5. Tabla de Ejercicios asignados por Día (con cantidad de series):
+-- 5. Tabla de Ejercicios asignados por Día:
 CREATE TABLE IF NOT EXISTS rutina_ejercicios (
     id_rutina_ejercicio INT AUTO_INCREMENT PRIMARY KEY,
     id_rutina_dia INT,
@@ -52,10 +51,7 @@ CREATE TABLE IF NOT EXISTS rutina_ejercicios (
     FOREIGN KEY (id_ejercicio) REFERENCES ejercicios(id_ejercicio) ON DELETE CASCADE
 );
 
--- 6. Tabla de Registros de Entrenamiento (Sin asistio y con repeticiones):
--- serie_unica: un usuario no puede tener la misma serie de un ejercicio dos veces en el mismo día
--- id_rutina y numero_dia: qué rutina y qué día de esa rutina se estaba entrenando (para comparar días iguales).
--- Si la rutina se elimina, quedan en NULL (SET NULL) y el historial se conserva.
+-- 6. Tabla de Registros de Entrenamiento:
 CREATE TABLE IF NOT EXISTS registros_entrenamiento (
     id_registro INT AUTO_INCREMENT PRIMARY KEY,
     dni_usuario VARCHAR(20),
@@ -73,7 +69,7 @@ CREATE TABLE IF NOT EXISTS registros_entrenamiento (
 );
 
 INSERT INTO ejercicios (dni_usuario, nombre, grupo_muscular, tipo_ejercicio) VALUES
--- 1. Piernas
+-- 1. Piernas:
 (NULL, 'Sentadilla libre con barra', 'Piernas', 'Libre'),
 (NULL, 'Prensa de piernas 45°', 'Piernas', 'Máquina'),
 (NULL, 'Sillón extensor de cuádriceps', 'Piernas', 'Máquina'),
@@ -83,7 +79,7 @@ INSERT INTO ejercicios (dni_usuario, nombre, grupo_muscular, tipo_ejercicio) VAL
 (NULL, 'Sentadilla Hack', 'Piernas', 'Máquina'),
 (NULL, 'Elevación de talones / Gemelos de pie', 'Piernas', 'Máquina'),
 (NULL, 'Sentadilla Búlgara con mancuernas', 'Piernas', 'Libre'),
--- 2. Pecho
+-- 2. Pecho:
 (NULL, 'Press de banca plano con barra', 'Pecho', 'Libre'),
 (NULL, 'Press inclinado con mancuernas', 'Pecho', 'Libre'),
 (NULL, 'Cruce de poleas para pecho (Crossover)', 'Pecho', 'Máquina'),
@@ -91,7 +87,7 @@ INSERT INTO ejercicios (dni_usuario, nombre, grupo_muscular, tipo_ejercicio) VAL
 (NULL, 'Aperturas planas con mancuernas', 'Pecho', 'Libre'),
 (NULL, 'Fondos en paralelas (Dips)', 'Pecho', 'Libre'),
 (NULL, 'Pec Deck / Contractora de pecho', 'Pecho', 'Máquina'),
--- 3. Espalda
+-- 3. Espalda:
 (NULL, 'Dominadas prono / supino', 'Espalda', 'Libre'),
 (NULL, 'Jalón al pecho en polea alta', 'Espalda', 'Máquina'),
 (NULL, 'Remo con barra T', 'Espalda', 'Libre'),
@@ -99,7 +95,7 @@ INSERT INTO ejercicios (dni_usuario, nombre, grupo_muscular, tipo_ejercicio) VAL
 (NULL, 'Remo unilateral con mancuerna', 'Espalda', 'Libre'),
 (NULL, 'Peso muerto convencional', 'Espalda', 'Libre'),
 (NULL, 'Pullover en polea alta', 'Espalda', 'Máquina'),
--- 4. Hombros
+-- 4. Hombros:
 (NULL, 'Press militar con barra', 'Hombros', 'Libre'),
 (NULL, 'Press de hombros en máquina', 'Hombros', 'Máquina'),
 (NULL, 'Vuelos / Elevaciones laterales con mancuernas', 'Hombros', 'Libre'),
@@ -107,17 +103,17 @@ INSERT INTO ejercicios (dni_usuario, nombre, grupo_muscular, tipo_ejercicio) VAL
 (NULL, 'Face pull en polea alta', 'Hombros', 'Máquina'),
 (NULL, 'Pájaro / Vuelos posteriores con mancuernas', 'Hombros', 'Libre'),
 (NULL, 'Encogimiento de hombros con mancuernas', 'Hombros', 'Libre'),
--- 5. Bíceps
+-- 5. Bíceps:
 (NULL, 'Curl de bíceps con barra Z', 'Bíceps', 'Libre'),
 (NULL, 'Curl de bíceps alterno con mancuernas', 'Bíceps', 'Libre'),
 (NULL, 'Curl de bíceps martillo con mancuernas', 'Bíceps', 'Libre'),
 (NULL, 'Curl en banco Scott con barra Z', 'Bíceps', 'Libre'),
--- 6. Tríceps
+-- 6. Tríceps:
 (NULL, 'Extensiones de tríceps en polea alta', 'Tríceps', 'Máquina'),
 (NULL, 'Press francés con barra Z', 'Tríceps', 'Libre'),
 (NULL, 'Extensiones de tríceps sobre la cabeza con mancuerna', 'Tríceps', 'Libre'),
 (NULL, 'Extensión de tríceps unilateral en polea baja', 'Tríceps', 'Máquina'),
--- 7. Abdomen
+-- 7. Abdomen:
 (NULL, 'Encogimiento abdominal (Crunch en suelo)', 'Abdomen', 'Libre'),
 (NULL, 'Crunch en máquina para abdomen', 'Abdomen', 'Máquina'),
 (NULL, 'Elevación de piernas colgado en barra', 'Abdomen', 'Libre'),
@@ -125,26 +121,25 @@ INSERT INTO ejercicios (dni_usuario, nombre, grupo_muscular, tipo_ejercicio) VAL
 (NULL, 'Crunch en polea alta', 'Abdomen', 'Máquina'),
 (NULL, 'Plancha isométrica', 'Abdomen', 'Libre');
 
--- =====================================================================================
--- USUARIOS DE PRUEBA (datos ficticios)
+-- USUARIOS DE PRUEBA (datos ficticios):
 -- Dos usuarios simulados con 3 meses de entrenamiento (01/09/2026 al 14/11/2026),
 -- para probar la interfaz con muchos registros (calendario, comparaciones e IA).
 --   Martín Prueba   -> DNI 40123123 (rutinas: Push Pull Legs y Full Body (viaje))
 --   Agustina Prueba -> DNI 40321321 (rutinas: Torso / Pierna y Glúteos y Abdomen (extra))
 -- Los ejercicios precargados se buscan por su nombre, así este bloque funciona
 -- tanto en una base nueva como en una que ya tiene datos.
--- =====================================================================================
 
--- ---------- Martín Prueba (DNI 40123123) ----------
+
+-- Martín Prueba (DNI 40123123):
 INSERT INTO usuarios (dni, nombre, apellido, peso, altura, sexo) VALUES ('40123123', 'Martín', 'Prueba', 80, 1.78, 'M');
 
--- Ejercicios creados por el usuario
+-- Ejercicios creados por el usuario:
 INSERT INTO ejercicios (dni_usuario, nombre, grupo_muscular, tipo_ejercicio) VALUES ('40123123', 'Remo en máquina Hammer', 'Espalda', 'Máquina');
 SET @u1_propio1 = LAST_INSERT_ID();
 INSERT INTO ejercicios (dni_usuario, nombre, grupo_muscular, tipo_ejercicio) VALUES ('40123123', 'Press de pecho en máquina Hammer', 'Pecho', 'Máquina');
 SET @u1_propio2 = LAST_INSERT_ID();
 
--- IDs de los ejercicios precargados que usa (buscados por nombre)
+-- IDs de los ejercicios precargados que usa (buscados por nombre):
 SET @u1_ej1 = (SELECT id_ejercicio FROM ejercicios WHERE nombre = 'Press de banca plano con barra' AND dni_usuario IS NULL LIMIT 1);
 SET @u1_ej2 = (SELECT id_ejercicio FROM ejercicios WHERE nombre = 'Press inclinado con mancuernas' AND dni_usuario IS NULL LIMIT 1);
 SET @u1_ej3 = (SELECT id_ejercicio FROM ejercicios WHERE nombre = 'Press militar con barra' AND dni_usuario IS NULL LIMIT 1);
@@ -165,7 +160,7 @@ SET @u1_ej17 = (SELECT id_ejercicio FROM ejercicios WHERE nombre = 'Press de hom
 SET @u1_ej18 = (SELECT id_ejercicio FROM ejercicios WHERE nombre = 'Estocadas / Zancadas con mancuernas' AND dni_usuario IS NULL LIMIT 1);
 SET @u1_ej19 = (SELECT id_ejercicio FROM ejercicios WHERE nombre = 'Crunch en polea alta' AND dni_usuario IS NULL LIMIT 1);
 
--- Rutina: Push Pull Legs
+-- Rutina: Push Pull Legs:
 INSERT INTO rutinas (dni_usuario, nombre_rutina, cantidad_dias) VALUES ('40123123', 'Push Pull Legs', 3);
 SET @u1_rut1 = LAST_INSERT_ID();
 INSERT INTO rutina_dias (id_rutina, numero_dia, grupo_muscular) VALUES (@u1_rut1, 1, 'Pecho, Hombros, Tríceps');
@@ -178,7 +173,7 @@ INSERT INTO rutina_dias (id_rutina, numero_dia, grupo_muscular) VALUES (@u1_rut1
 SET @u1_rut1_dia3 = LAST_INSERT_ID();
 INSERT INTO rutina_ejercicios (id_rutina_dia, id_ejercicio, cantidad_series) VALUES (@u1_rut1_dia3, @u1_ej10, 4), (@u1_rut1_dia3, @u1_ej11, 3), (@u1_rut1_dia3, @u1_ej12, 3), (@u1_rut1_dia3, @u1_ej13, 3), (@u1_rut1_dia3, @u1_ej14, 3);
 
--- Rutina: Full Body (viaje)
+-- Rutina: Full Body (viaje):
 INSERT INTO rutinas (dni_usuario, nombre_rutina, cantidad_dias) VALUES ('40123123', 'Full Body (viaje)', 2);
 SET @u1_rut2 = LAST_INSERT_ID();
 INSERT INTO rutina_dias (id_rutina, numero_dia, grupo_muscular) VALUES (@u1_rut2, 1, 'Pecho, Espalda, Piernas, Hombros');
@@ -188,7 +183,7 @@ INSERT INTO rutina_dias (id_rutina, numero_dia, grupo_muscular) VALUES (@u1_rut2
 SET @u1_rut2_dia2 = LAST_INSERT_ID();
 INSERT INTO rutina_ejercicios (id_rutina_dia, id_ejercicio, cantidad_series) VALUES (@u1_rut2_dia2, @u1_ej2, 3), (@u1_rut2_dia2, @u1_ej7, 3), (@u1_rut2_dia2, @u1_ej18, 3), (@u1_rut2_dia2, @u1_ej19, 3);
 
--- Series registradas (un INSERT por cada día entrenado)
+-- Series registradas (un INSERT por cada día entrenado):
 INSERT INTO registros_entrenamiento (dni_usuario, id_ejercicio, id_rutina, numero_dia, fecha, serie_numero, peso_kg, repeticiones) VALUES ('40123123', @u1_ej1, @u1_rut1, 1, '2026-09-02', 1, 70, 6), ('40123123', @u1_ej1, @u1_rut1, 1, '2026-09-02', 2, 70, 5), ('40123123', @u1_ej1, @u1_rut1, 1, '2026-09-02', 3, 70, 4), ('40123123', @u1_ej1, @u1_rut1, 1, '2026-09-02', 4, 70, 4), ('40123123', @u1_ej2, @u1_rut1, 1, '2026-09-02', 1, 22, 8), ('40123123', @u1_ej2, @u1_rut1, 1, '2026-09-02', 2, 22, 8), ('40123123', @u1_ej2, @u1_rut1, 1, '2026-09-02', 3, 22, 8), ('40123123', @u1_ej3, @u1_rut1, 1, '2026-09-02', 1, 40, 7), ('40123123', @u1_ej3, @u1_rut1, 1, '2026-09-02', 2, 40, 6), ('40123123', @u1_ej3, @u1_rut1, 1, '2026-09-02', 3, 40, 6), ('40123123', @u1_ej4, @u1_rut1, 1, '2026-09-02', 1, 10, 10), ('40123123', @u1_ej4, @u1_rut1, 1, '2026-09-02', 2, 10, 10), ('40123123', @u1_ej4, @u1_rut1, 1, '2026-09-02', 3, 10, 9), ('40123123', @u1_ej5, @u1_rut1, 1, '2026-09-02', 1, 27.5, 10), ('40123123', @u1_ej5, @u1_rut1, 1, '2026-09-02', 2, 27.5, 11), ('40123123', @u1_ej5, @u1_rut1, 1, '2026-09-02', 3, 27.5, 10);
 INSERT INTO registros_entrenamiento (dni_usuario, id_ejercicio, id_rutina, numero_dia, fecha, serie_numero, peso_kg, repeticiones) VALUES ('40123123', @u1_ej6, @u1_rut1, 2, '2026-09-04', 1, 0, 4), ('40123123', @u1_ej6, @u1_rut1, 2, '2026-09-04', 2, 0, 5), ('40123123', @u1_ej6, @u1_rut1, 2, '2026-09-04', 3, 0, 3), ('40123123', @u1_propio1, @u1_rut1, 2, '2026-09-04', 1, 60, 8), ('40123123', @u1_propio1, @u1_rut1, 2, '2026-09-04', 2, 60, 7), ('40123123', @u1_propio1, @u1_rut1, 2, '2026-09-04', 3, 60, 8), ('40123123', @u1_ej7, @u1_rut1, 2, '2026-09-04', 1, 55, 8), ('40123123', @u1_ej7, @u1_rut1, 2, '2026-09-04', 2, 55, 8), ('40123123', @u1_ej7, @u1_rut1, 2, '2026-09-04', 3, 55, 7), ('40123123', @u1_ej8, @u1_rut1, 2, '2026-09-04', 1, 30, 8), ('40123123', @u1_ej8, @u1_rut1, 2, '2026-09-04', 2, 30, 8), ('40123123', @u1_ej8, @u1_rut1, 2, '2026-09-04', 3, 30, 7), ('40123123', @u1_ej9, @u1_rut1, 2, '2026-09-04', 1, 14, 7), ('40123123', @u1_ej9, @u1_rut1, 2, '2026-09-04', 2, 14, 8), ('40123123', @u1_ej9, @u1_rut1, 2, '2026-09-04', 3, 14, 6);
 INSERT INTO registros_entrenamiento (dni_usuario, id_ejercicio, id_rutina, numero_dia, fecha, serie_numero, peso_kg, repeticiones) VALUES ('40123123', @u1_ej10, @u1_rut1, 3, '2026-09-07', 1, 90, 5), ('40123123', @u1_ej10, @u1_rut1, 3, '2026-09-07', 2, 90, 5), ('40123123', @u1_ej10, @u1_rut1, 3, '2026-09-07', 3, 90, 5), ('40123123', @u1_ej10, @u1_rut1, 3, '2026-09-07', 4, 90, 3), ('40123123', @u1_ej11, @u1_rut1, 3, '2026-09-07', 1, 160, 8), ('40123123', @u1_ej11, @u1_rut1, 3, '2026-09-07', 2, 160, 8), ('40123123', @u1_ej11, @u1_rut1, 3, '2026-09-07', 3, 160, 6), ('40123123', @u1_ej12, @u1_rut1, 3, '2026-09-07', 1, 80, 8), ('40123123', @u1_ej12, @u1_rut1, 3, '2026-09-07', 2, 80, 8), ('40123123', @u1_ej12, @u1_rut1, 3, '2026-09-07', 3, 80, 7), ('40123123', @u1_ej13, @u1_rut1, 3, '2026-09-07', 1, 50, 10), ('40123123', @u1_ej13, @u1_rut1, 3, '2026-09-07', 2, 50, 10), ('40123123', @u1_ej13, @u1_rut1, 3, '2026-09-07', 3, 50, 10), ('40123123', @u1_ej14, @u1_rut1, 3, '2026-09-07', 1, 70, 11), ('40123123', @u1_ej14, @u1_rut1, 3, '2026-09-07', 2, 70, 12), ('40123123', @u1_ej14, @u1_rut1, 3, '2026-09-07', 3, 70, 11);
@@ -218,16 +213,16 @@ INSERT INTO registros_entrenamiento (dni_usuario, id_ejercicio, id_rutina, numer
 INSERT INTO registros_entrenamiento (dni_usuario, id_ejercicio, id_rutina, numero_dia, fecha, serie_numero, peso_kg, repeticiones) VALUES ('40123123', @u1_ej1, @u1_rut1, 1, '2026-11-11', 1, 72.5, 8), ('40123123', @u1_ej1, @u1_rut1, 1, '2026-11-11', 2, 72.5, 8), ('40123123', @u1_ej1, @u1_rut1, 1, '2026-11-11', 3, 72.5, 7), ('40123123', @u1_ej1, @u1_rut1, 1, '2026-11-11', 4, 72.5, 5), ('40123123', @u1_ej2, @u1_rut1, 1, '2026-11-11', 1, 24, 10), ('40123123', @u1_ej2, @u1_rut1, 1, '2026-11-11', 2, 24, 9), ('40123123', @u1_ej2, @u1_rut1, 1, '2026-11-11', 3, 24, 8), ('40123123', @u1_ej3, @u1_rut1, 1, '2026-11-11', 1, 40, 7), ('40123123', @u1_ej3, @u1_rut1, 1, '2026-11-11', 2, 40, 8), ('40123123', @u1_ej3, @u1_rut1, 1, '2026-11-11', 3, 40, 7), ('40123123', @u1_ej4, @u1_rut1, 1, '2026-11-11', 1, 11, 11), ('40123123', @u1_ej4, @u1_rut1, 1, '2026-11-11', 2, 11, 9), ('40123123', @u1_ej4, @u1_rut1, 1, '2026-11-11', 3, 11, 8), ('40123123', @u1_ej5, @u1_rut1, 1, '2026-11-11', 1, 32.5, 11), ('40123123', @u1_ej5, @u1_rut1, 1, '2026-11-11', 2, 32.5, 12), ('40123123', @u1_ej5, @u1_rut1, 1, '2026-11-11', 3, 32.5, 10);
 INSERT INTO registros_entrenamiento (dni_usuario, id_ejercicio, id_rutina, numero_dia, fecha, serie_numero, peso_kg, repeticiones) VALUES ('40123123', @u1_ej6, @u1_rut1, 2, '2026-11-13', 1, 0, 10), ('40123123', @u1_ej6, @u1_rut1, 2, '2026-11-13', 2, 0, 10), ('40123123', @u1_ej6, @u1_rut1, 2, '2026-11-13', 3, 0, 9), ('40123123', @u1_propio1, @u1_rut1, 2, '2026-11-13', 1, 65, 9), ('40123123', @u1_propio1, @u1_rut1, 2, '2026-11-13', 2, 65, 9), ('40123123', @u1_propio1, @u1_rut1, 2, '2026-11-13', 3, 65, 8), ('40123123', @u1_ej7, @u1_rut1, 2, '2026-11-13', 1, 60, 8), ('40123123', @u1_ej7, @u1_rut1, 2, '2026-11-13', 2, 60, 9), ('40123123', @u1_ej7, @u1_rut1, 2, '2026-11-13', 3, 60, 8), ('40123123', @u1_ej8, @u1_rut1, 2, '2026-11-13', 1, 30, 9), ('40123123', @u1_ej8, @u1_rut1, 2, '2026-11-13', 2, 30, 9), ('40123123', @u1_ej8, @u1_rut1, 2, '2026-11-13', 3, 30, 8), ('40123123', @u1_ej9, @u1_rut1, 2, '2026-11-13', 1, 14, 10), ('40123123', @u1_ej9, @u1_rut1, 2, '2026-11-13', 2, 14, 11), ('40123123', @u1_ej9, @u1_rut1, 2, '2026-11-13', 3, 14, 9);
 
--- ---------- Agustina Prueba (DNI 40321321) ----------
+-- Agustina Prueba (DNI 40321321):
 INSERT INTO usuarios (dni, nombre, apellido, peso, altura, sexo) VALUES ('40321321', 'Agustina', 'Prueba', 62, 1.65, 'F');
 
--- Ejercicios creados por el usuario
+-- Ejercicios creados por el usuario:
 INSERT INTO ejercicios (dni_usuario, nombre, grupo_muscular, tipo_ejercicio) VALUES ('40321321', 'Hip thrust con barra', 'Piernas', 'Libre');
 SET @u2_propio1 = LAST_INSERT_ID();
 INSERT INTO ejercicios (dni_usuario, nombre, grupo_muscular, tipo_ejercicio) VALUES ('40321321', 'Patada de glúteo en polea', 'Piernas', 'Máquina');
 SET @u2_propio2 = LAST_INSERT_ID();
 
--- IDs de los ejercicios precargados que usa (buscados por nombre)
+-- IDs de los ejercicios precargados que usa (buscados por nombre):
 SET @u2_ej1 = (SELECT id_ejercicio FROM ejercicios WHERE nombre = 'Sentadilla libre con barra' AND dni_usuario IS NULL LIMIT 1);
 SET @u2_ej2 = (SELECT id_ejercicio FROM ejercicios WHERE nombre = 'Prensa de piernas 45°' AND dni_usuario IS NULL LIMIT 1);
 SET @u2_ej3 = (SELECT id_ejercicio FROM ejercicios WHERE nombre = 'Estocadas / Zancadas con mancuernas' AND dni_usuario IS NULL LIMIT 1);
@@ -250,7 +245,7 @@ SET @u2_ej19 = (SELECT id_ejercicio FROM ejercicios WHERE nombre = 'Crunch en m�
 SET @u2_ej20 = (SELECT id_ejercicio FROM ejercicios WHERE nombre = 'Elevación de piernas colgado en barra' AND dni_usuario IS NULL LIMIT 1);
 SET @u2_ej21 = (SELECT id_ejercicio FROM ejercicios WHERE nombre = 'Rueda abdominal (Ab Roller)' AND dni_usuario IS NULL LIMIT 1);
 
--- Rutina: Torso / Pierna
+-- Rutina: Torso / Pierna:
 INSERT INTO rutinas (dni_usuario, nombre_rutina, cantidad_dias) VALUES ('40321321', 'Torso / Pierna', 4);
 SET @u2_rut1 = LAST_INSERT_ID();
 INSERT INTO rutina_dias (id_rutina, numero_dia, grupo_muscular) VALUES (@u2_rut1, 1, 'Piernas');
@@ -266,14 +261,14 @@ INSERT INTO rutina_dias (id_rutina, numero_dia, grupo_muscular) VALUES (@u2_rut1
 SET @u2_rut1_dia4 = LAST_INSERT_ID();
 INSERT INTO rutina_ejercicios (id_rutina_dia, id_ejercicio, cantidad_series) VALUES (@u2_rut1_dia4, @u2_ej15, 3), (@u2_rut1_dia4, @u2_ej16, 3), (@u2_rut1_dia4, @u2_ej17, 3), (@u2_rut1_dia4, @u2_ej18, 3), (@u2_rut1_dia4, @u2_ej19, 3);
 
--- Rutina: Glúteos y Abdomen (extra)
+-- Rutina: Glúteos y Abdomen (extra):
 INSERT INTO rutinas (dni_usuario, nombre_rutina, cantidad_dias) VALUES ('40321321', 'Glúteos y Abdomen (extra)', 1);
 SET @u2_rut2 = LAST_INSERT_ID();
 INSERT INTO rutina_dias (id_rutina, numero_dia, grupo_muscular) VALUES (@u2_rut2, 1, 'Piernas, Abdomen');
 SET @u2_rut2_dia1 = LAST_INSERT_ID();
 INSERT INTO rutina_ejercicios (id_rutina_dia, id_ejercicio, cantidad_series) VALUES (@u2_rut2_dia1, @u2_propio1, 3), (@u2_rut2_dia1, @u2_propio2, 3), (@u2_rut2_dia1, @u2_ej20, 3), (@u2_rut2_dia1, @u2_ej21, 3);
 
--- Series registradas (un INSERT por cada día entrenado)
+-- Series registradas (un INSERT por cada día entrenado):
 INSERT INTO registros_entrenamiento (dni_usuario, id_ejercicio, id_rutina, numero_dia, fecha, serie_numero, peso_kg, repeticiones) VALUES ('40321321', @u2_ej1, @u2_rut1, 1, '2026-09-01', 1, 45, 5), ('40321321', @u2_ej1, @u2_rut1, 1, '2026-09-01', 2, 45, 7), ('40321321', @u2_ej1, @u2_rut1, 1, '2026-09-01', 3, 45, 5), ('40321321', @u2_ej1, @u2_rut1, 1, '2026-09-01', 4, 45, 4), ('40321321', @u2_ej2, @u2_rut1, 1, '2026-09-01', 1, 100, 10), ('40321321', @u2_ej2, @u2_rut1, 1, '2026-09-01', 2, 100, 10), ('40321321', @u2_ej2, @u2_rut1, 1, '2026-09-01', 3, 100, 9), ('40321321', @u2_ej3, @u2_rut1, 1, '2026-09-01', 1, 10, 9), ('40321321', @u2_ej3, @u2_rut1, 1, '2026-09-01', 2, 10, 9), ('40321321', @u2_ej3, @u2_rut1, 1, '2026-09-01', 3, 10, 6), ('40321321', @u2_ej4, @u2_rut1, 1, '2026-09-01', 1, 30, 10), ('40321321', @u2_ej4, @u2_rut1, 1, '2026-09-01', 2, 30, 10), ('40321321', @u2_ej4, @u2_rut1, 1, '2026-09-01', 3, 30, 8), ('40321321', @u2_ej5, @u2_rut1, 1, '2026-09-01', 1, 40, 11), ('40321321', @u2_ej5, @u2_rut1, 1, '2026-09-01', 2, 40, 11), ('40321321', @u2_ej5, @u2_rut1, 1, '2026-09-01', 3, 40, 10);
 INSERT INTO registros_entrenamiento (dni_usuario, id_ejercicio, id_rutina, numero_dia, fecha, serie_numero, peso_kg, repeticiones) VALUES ('40321321', @u2_ej6, @u2_rut1, 2, '2026-09-03', 1, 35, 8), ('40321321', @u2_ej6, @u2_rut1, 2, '2026-09-03', 2, 35, 8), ('40321321', @u2_ej6, @u2_rut1, 2, '2026-09-03', 3, 35, 7), ('40321321', @u2_ej7, @u2_rut1, 2, '2026-09-03', 1, 30, 7), ('40321321', @u2_ej7, @u2_rut1, 2, '2026-09-03', 2, 30, 8), ('40321321', @u2_ej7, @u2_rut1, 2, '2026-09-03', 3, 30, 7), ('40321321', @u2_ej8, @u2_rut1, 2, '2026-09-03', 1, 10, 7), ('40321321', @u2_ej8, @u2_rut1, 2, '2026-09-03', 2, 10, 7), ('40321321', @u2_ej8, @u2_rut1, 2, '2026-09-03', 3, 10, 7), ('40321321', @u2_ej9, @u2_rut1, 2, '2026-09-03', 1, 4, 9), ('40321321', @u2_ej9, @u2_rut1, 2, '2026-09-03', 2, 4, 10), ('40321321', @u2_ej9, @u2_rut1, 2, '2026-09-03', 3, 4, 9), ('40321321', @u2_ej10, @u2_rut1, 2, '2026-09-03', 1, 8, 8), ('40321321', @u2_ej10, @u2_rut1, 2, '2026-09-03', 2, 8, 8), ('40321321', @u2_ej10, @u2_rut1, 2, '2026-09-03', 3, 8, 6), ('40321321', @u2_ej11, @u2_rut1, 2, '2026-09-03', 1, 15, 10), ('40321321', @u2_ej11, @u2_rut1, 2, '2026-09-03', 2, 15, 9), ('40321321', @u2_ej11, @u2_rut1, 2, '2026-09-03', 3, 15, 9);
 INSERT INTO registros_entrenamiento (dni_usuario, id_ejercicio, id_rutina, numero_dia, fecha, serie_numero, peso_kg, repeticiones) VALUES ('40321321', @u2_propio1, @u2_rut1, 3, '2026-09-04', 1, 60, 9), ('40321321', @u2_propio1, @u2_rut1, 3, '2026-09-04', 2, 60, 8), ('40321321', @u2_propio1, @u2_rut1, 3, '2026-09-04', 3, 60, 7), ('40321321', @u2_propio1, @u2_rut1, 3, '2026-09-04', 4, 60, 6), ('40321321', @u2_ej12, @u2_rut1, 3, '2026-09-04', 1, 40, 8), ('40321321', @u2_ej12, @u2_rut1, 3, '2026-09-04', 2, 40, 8), ('40321321', @u2_ej12, @u2_rut1, 3, '2026-09-04', 3, 40, 8), ('40321321', @u2_ej13, @u2_rut1, 3, '2026-09-04', 1, 20, 9), ('40321321', @u2_ej13, @u2_rut1, 3, '2026-09-04', 2, 20, 11), ('40321321', @u2_ej13, @u2_rut1, 3, '2026-09-04', 3, 20, 8), ('40321321', @u2_ej14, @u2_rut1, 3, '2026-09-04', 1, 8, 7), ('40321321', @u2_ej14, @u2_rut1, 3, '2026-09-04', 2, 8, 7), ('40321321', @u2_ej14, @u2_rut1, 3, '2026-09-04', 3, 8, 8), ('40321321', @u2_propio2, @u2_rut1, 3, '2026-09-04', 1, 15, 13), ('40321321', @u2_propio2, @u2_rut1, 3, '2026-09-04', 2, 15, 12), ('40321321', @u2_propio2, @u2_rut1, 3, '2026-09-04', 3, 15, 11);

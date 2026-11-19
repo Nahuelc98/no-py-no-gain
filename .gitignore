@@ -1,14 +1,5 @@
-# Ignorar archivo de claves y credenciales
+# Archivo con las claves (contraseña de MySQL y API key de Gemini): no se sube a GitHub
 claves_nopy.py
-clave*
 
-# Archivos de caché de Python y entornos virtuales comunes
-__pycache__/
-*.pyc
-*.pyo
-.venv/
-venv/
-env/
-
-# Informes generados por la IA (tienen datos de entrenamiento de cada usuario)
-analisis_*.txt
+# Copia del archivo de claves que Python crea solo en la carpeta __pycache__ (también tiene las claves)
+__pycache__/claves_nopy*

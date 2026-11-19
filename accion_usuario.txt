@@ -56,3 +56,15 @@ DNI: 40123123 | Nombre y Apellido: Martín Prueba | Fecha y Hora: 15/11/2026 03:
 DNI: 40123123 | Nombre y Apellido: Martín Prueba | Fecha y Hora: 15/11/2026 03:35:59 | CERRÓ SESIÓN
 DNI: 40964940 | Nombre y Apellido: Nahuel Cuello | Fecha y Hora: 16/11/2026 12:04:01 | INICIÓ SESIÓN
 DNI: 40964940 | Nombre y Apellido: Nahuel Cuello | Fecha y Hora: 16/11/2026 12:08:17 | CERRÓ SESIÓN
+DNI: 40321321 | Nombre y Apellido: Agustina Prueba | Fecha y Hora: 16/11/2026 21:17:49 | INICIÓ SESIÓN
+DNI: 40321321 | Nombre y Apellido: Agustina Prueba | Fecha y Hora: 16/11/2026 21:20:31 | CERRÓ SESIÓN
+DNI: 40123123 | Nombre y Apellido: Martín Prueba | Fecha y Hora: 17/11/2026 18:30:17 | INICIÓ SESIÓN
+DNI: 40123123 | Nombre y Apellido: Martín Prueba | Fecha y Hora: 17/11/2026 18:48:22 | CERRÓ SESIÓN
+DNI: 40123123 | Nombre y Apellido: Martín Prueba | Fecha y Hora: 17/11/2026 19:30:41 | INICIÓ SESIÓN
+DNI: 40964940 | Nombre y Apellido: Nahuel Cuello | Fecha y Hora: 17/11/2026 22:59:43 | INICIÓ SESIÓN
+DNI: 40964940 | Nombre y Apellido: Nahuel Cuello | Fecha y Hora: 18/11/2026 00:21:00 | CERRÓ SESIÓN
+DNI: 40123123 | Nombre y Apellido: Martín Prueba | Fecha y Hora: 19/11/2026 13:31:40 | INICIÓ SESIÓN
+DNI: 40123123 | Nombre y Apellido: Martín Prueba | Fecha y Hora: 19/11/2026 13:35:34 | CERRÓ SESIÓN
+DNI: 40123123 | Nombre y Apellido: Martín Prueba | Fecha y Hora: 19/11/2026 13:43:04 | INICIÓ SESIÓN
+DNI: 40321321 | Nombre y Apellido: Agustina Prueba | Fecha y Hora: 19/11/2026 17:21:19 | INICIÓ SESIÓN
+DNI: 40321321 | Nombre y Apellido: Agustina Prueba | Fecha y Hora: 19/11/2026 17:21:54 | CERRÓ SESIÓN

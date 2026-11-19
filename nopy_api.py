@@ -3,21 +3,21 @@ Módulo de Integración con IA para 'No py, no gain'
 Procesa los registros de entrenamiento del usuario y genera un análisis de rendimiento.
 """
 
+import time  # Para esperar unos segundos entre un intento y otro.
 from google import genai  # Importamos librería de gemini ia.
-from google.genai import types  # Para configurar el tiempo máximo de espera
-# Asegúrate de crear este archivo con tu clave o importarla de donde corresponda
-from claves_nopy import API_NOPY
+from claves_nopy import API_NOPY  # Traemos la variable con la clave de la api de gemini.
 
-# Modelos de Gemini que se prueban en orden. Si uno no responde (Google lo dio de baja
-# o está saturado), se intenta con el siguiente:
-# - "gemini-flash-lite-latest": versión liviana y la más rápida (escribe el informe en unos 5 segundos).
-# - "gemini-3.5-flash": más completo, pero más lento cuando hay mucha demanda.
-# - "gemini-flash-latest": siempre apunta al modelo Flash más nuevo (no se vence cuando Google retira modelos).
-MODELOS_IA = ["gemini-flash-lite-latest", "gemini-3.5-flash", "gemini-flash-latest"]
+# Modelo de Gemini: "gemini-3.5-flash-lite"
+MODELO_IA = "gemini-3.5-flash-lite"
 
-# Tiempo máximo de espera por cada modelo (en milisegundos). Si no responde en ese tiempo,
-# pasamos al siguiente modelo en lugar de dejar la aplicación esperando varios minutos.
-TIEMPO_MAXIMO_IA = 30000
+# Tiempo máximo de espera (en milisegundos): 90 segundos. 
+# Si no responde en ese tiempo, se muestra un mensaje de error para no dejar la aplicación esperando.
+TIEMPO_MAXIMO_IA = 90000
+
+# Cantidad de veces que le pedimos el informe a la IA si Google está saturado,
+# y segundos que esperamos entre un intento y otro.
+CANTIDAD_INTENTOS = 3
+SEGUNDOS_ENTRE_INTENTOS = 5
 
 def limpiar_formato(texto):
     """
@@ -76,7 +76,7 @@ def analizar_rendimiento_usuario(registros_entrenamiento, nombre_usuario="Atleta
     historial_texto = ""
     if registros_entrenamiento:
         for reg in registros_entrenamiento:
-            # Estructura típica: (fecha, nombre_ejercicio, serie_numero, peso_kg, repeticiones)
+            # Cada registro tiene: (fecha, nombre_ejercicio, serie_numero, peso_kg, repeticiones)
             fecha, ejercicio, serie, peso, reps = reg
             historial_texto += f"- Fecha: {fecha} | Ejercicio: {ejercicio} | Serie {serie}: {peso}kg x {reps} reps\n"
     else:
@@ -108,24 +108,18 @@ Reglas:
 - Usá la ortografía correcta del español, con todas sus tildes (por ejemplo: días, comenzó, débiles).
 """
 
-    try:
-        client = genai.Client(api_key=API_NOPY, http_options=types.HttpOptions(timeout=TIEMPO_MAXIMO_IA))
-    except Exception as e:
-        error_msg = f"[!] No se pudo conectar con la Inteligencia Artificial (revisá la API key en claves_nopy.py).\nDetalle: {e}"
-        print(error_msg)
-        return error_msg
-
-    # Probamos los modelos en orden: si uno falla, intentamos con el siguiente
+    # Si Google está saturado la IA puede no responder, así que lo intentamos hasta 3 veces
     ultimo_error = None
-    for modelo in MODELOS_IA:
+    for intento in range(1, CANTIDAD_INTENTOS + 1):
         try:
+            # Conectamos con Gemini usando la clave de la API y el tiempo máximo de espera
+            client = genai.Client(api_key=API_NOPY, http_options={"timeout": TIEMPO_MAXIMO_IA})
+
             # Solicitud al modelo de Gemini
             response = client.models.generate_content(
-                model=modelo,
+                model=MODELO_IA,  # Elegir el modelo de LLM
                 contents=prompt
             )
-
-            print(f"[OK] Respuesta generada con el modelo '{modelo}'.")
             print(response.text)
 
             # Limpiamos los símbolos de formato (**, #, $...) para que se lea bien en la interfaz
@@ -133,15 +127,18 @@ Reglas:
             respuesta = limpiar_formato(str(response.text))
             return respuesta
         except Exception as e:
-            # Guardamos el error y seguimos con el próximo modelo de la lista
-            print(f"[!] El modelo '{modelo}' no respondió: {e}")
+            # Guardamos el error para mostrarlo si fallan todos los intentos
             ultimo_error = e
+            print(f"[!] Intento {intento} de {CANTIDAD_INTENTOS}: la IA no respondió. Detalle: {e}")
+            # Si quedan intentos, esperamos unos segundos antes de volver a probar
+            if intento < CANTIDAD_INTENTOS:
+                time.sleep(SEGUNDOS_ENTRE_INTENTOS)
 
-    # Si ningún modelo respondió, devolvemos un mensaje claro para mostrar en la interfaz
+    # Si la IA no respondió en ningún intento, devolvemos un mensaje claro para mostrar en la interfaz
     error_msg = (
         "[!] No se pudo conectar con la Inteligencia Artificial.\n"
-        "Puede ser un problema de conexión a internet o que los servidores de Google estén saturados. "
-        "Probá de nuevo en unos minutos.\n"
+        "Puede ser un problema de conexión a internet, de la API key en claves_nopy.py "
+        "o que los servidores de Google estén saturados. Probá de nuevo en unos minutos.\n"
         f"Detalle: {ultimo_error}"
     )
     print(error_msg)
