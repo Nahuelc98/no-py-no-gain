@@ -38,12 +38,6 @@ def escribir_archivo(nombre_archivo, texto):
     archivo.write(texto)
     archivo.close()
 
-# # FUNCIÓN REESCRIBIR ARCHIVO (Modo write 'w'):
-def reescribir_archivo(nombre_archivo, lineas):
-    archivo = open(nombre_archivo, "w", encoding="utf-8")
-    archivo.writelines(lineas)
-    archivo.close()
-
 # # FUNCIÓN LEER ARCHIVO (Modo read 'r'):
 def leer_archivo(nombre_archivo):
     if not os.path.exists(nombre_archivo):
@@ -53,7 +47,7 @@ def leer_archivo(nombre_archivo):
     archivo.close()
     return contenido
 
-# FUNCIÓN PARA REGISTRAR EN EL LOG LAS ACCIONES DEL USUARIO
+# FUNCIÓN PARA REGISTRAR LAS ACCIONES DEL USUARIO:
 def registrar_accion_usuario(accion, dni="Sin DNI", nombre="Invitado"):
     """Guarda en 'accion_usuario.txt' la acción realizada por el usuario con fecha y hora exacta."""
     try:
@@ -65,6 +59,22 @@ def registrar_accion_usuario(accion, dni="Sin DNI", nombre="Invitado"):
         escribir_archivo(ruta, linea)
     except Exception as e:
         print(f"Error al registrar accion en txt: {e}")
+
+# FUNCIÓN PARA LEER EL ÚLTIMO INGRESO DEL USUARIO
+def obtener_ultimo_ingreso(dni):
+    """Lee 'accion_usuario.txt' y devuelve la fecha y hora del último inicio de sesión del usuario, o None."""
+    ultimo_ingreso = None
+    try:
+        lineas = leer_archivo(obtener_ruta_txt("accion_usuario.txt"))
+        # Recorremos todas las líneas: la última que coincide es el ingreso más reciente
+        for linea in lineas:
+            if f"DNI: {dni} |" in linea and "INICIÓ SESIÓN" in linea:
+                # La línea tiene partes separadas por " | ": DNI, nombre, fecha y hora, acción
+                partes = linea.split(" | ")
+                ultimo_ingreso = partes[2].replace("Fecha y Hora: ", "")
+    except Exception as e:
+        print(f"Error al leer el archivo txt: {e}")
+    return ultimo_ingreso
 
 def buscar_usuario_db(conexion, dni):
     """Busca un usuario por su DNI para el login. Devuelve un objeto Usuario o None."""
@@ -110,29 +120,20 @@ def actualizar_usuario_db(conexion, dni, nombre, apellido, peso, altura, sexo):
         print(f"Error al actualizar usuario: {e}")
         return False
 
-def obtener_ejercicios_por_grupo(conexion, grupo="Todos", dni_usuario=None):
-    """Devuelve los ejercicios globales (dni_usuario IS NULL) y los propios del usuario (solo los activos)."""
+def obtener_ejercicios_por_grupo(conexion, grupo, dni_usuario=None):
+    """Devuelve los ejercicios globales (dni_usuario IS NULL) y los propios del usuario de un grupo muscular (solo los activos)."""
     try:
         if not conexion:
             return []
         cursor = conexion.cursor()
         # activo = TRUE: no mostramos los ejercicios dados de baja (baja lógica)
-        if grupo == "Todos":
-            sql = """
-                SELECT id_ejercicio, nombre, grupo_muscular, tipo_ejercicio, dni_usuario
-                FROM ejercicios
-                WHERE (dni_usuario IS NULL OR dni_usuario = %s) AND activo = TRUE
-                ORDER BY id_ejercicio
-            """
-            cursor.execute(sql, (dni_usuario,))
-        else:
-            sql = """
-                SELECT id_ejercicio, nombre, grupo_muscular, tipo_ejercicio, dni_usuario
-                FROM ejercicios
-                WHERE (dni_usuario IS NULL OR dni_usuario = %s) AND LOWER(grupo_muscular) = LOWER(%s) AND activo = TRUE
-                ORDER BY id_ejercicio
-            """
-            cursor.execute(sql, (dni_usuario, grupo))
+        sql = """
+            SELECT id_ejercicio, nombre, grupo_muscular, tipo_ejercicio, dni_usuario
+            FROM ejercicios
+            WHERE (dni_usuario IS NULL OR dni_usuario = %s) AND LOWER(grupo_muscular) = LOWER(%s) AND activo = TRUE
+            ORDER BY id_ejercicio
+        """
+        cursor.execute(sql, (dni_usuario, grupo))
 
         resultados = cursor.fetchall()
         cursor.close()
@@ -326,7 +327,7 @@ def obtener_dias_de_rutina(conexion, id_rutina):
 
 def registrar_serie_entrenamiento_db(conexion, dni_usuario, id_ejercicio, fecha, serie_numero, peso_kg, repeticiones, id_rutina=None, numero_dia=None):
     """
-    Registra el desempeño de una serie específica en el entrenamiento (asistencia implícita).
+    Guarda una serie del entrenamiento (peso y repeticiones).
     También guarda qué rutina y qué día de la rutina se estaba entrenando (para comparar días iguales).
     Cada serie se puede cargar una sola vez por día: si ya existe, se REEMPLAZA con los datos nuevos.
     Devuelve "nueva" si se cargó por primera vez, "reemplazada" si se actualizó, o False si hubo un error.

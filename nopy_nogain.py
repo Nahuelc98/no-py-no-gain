@@ -29,20 +29,21 @@ from nopy_db import (
     obtener_registros_por_fecha_db,
     obtener_dias_rutina_por_fecha_db,
     obtener_grupos_por_fecha_db,
-    registrar_accion_usuario
+    registrar_accion_usuario,
+    obtener_ultimo_ingreso
 )
 import nopy_interfaz as gui
 from claves_nopy import DB_CONTRASEÑA
 from nopy_api import analizar_rendimiento_usuario
 
-# Conexión con MySQL utilizando las credenciales protegidas
+# Conexión con MySQL usando la contraseña guardada en claves_nopy.py
 conexion = pedir_conexion(host='127.0.0.1', user='root', password=DB_CONTRASEÑA, database='nopy_nogain', port=3306)
 
 # Funciones simples para comunicar la interfaz con la base de datos y la IA
 def fn_login(dni): return buscar_usuario_db(conexion, dni)
 def fn_registro(dni, nombre, apellido, peso, altura, sexo): return registrar_usuario_db(conexion, dni, nombre, apellido, peso, altura, sexo)
 def fn_actualizar_usuario(dni, nombre, apellido, peso, altura, sexo): return actualizar_usuario_db(conexion, dni, nombre, apellido, peso, altura, sexo)
-def fn_obtener_ejercicios(grupo="Todos", dni=None): return obtener_ejercicios_por_grupo(conexion, grupo, dni)
+def fn_obtener_ejercicios(grupo, dni=None): return obtener_ejercicios_por_grupo(conexion, grupo, dni)
 def fn_agregar_ejercicio(dni, nombre, grupo_muscular, tipo_ejercicio): return agregar_ejercicio_db(conexion, dni, nombre, grupo_muscular, tipo_ejercicio)
 def fn_obtener_ejercicios_propios(dni): return obtener_ejercicios_propios_db(conexion, dni)
 def fn_actualizar_ejercicio(id_ejercicio, dni, nombre, grupo, tipo): return actualizar_ejercicio_db(conexion, id_ejercicio, dni, nombre, grupo, tipo)
@@ -67,6 +68,7 @@ def fn_obtener_grupos_por_fecha(dni_usuario): return obtener_grupos_por_fecha_db
 # A la IA le pasamos también el usuario con sesión iniciada (objeto Usuario) para que use sus datos personales
 def fn_analizar_ia(registros, nombre_usuario): return analizar_rendimiento_usuario(registros, nombre_usuario, app.usuario_actual)
 def fn_registrar_accion(accion, dni="Sin DNI", nombre="Invitado"): registrar_accion_usuario(accion, dni, nombre)
+def fn_ultimo_ingreso(dni): return obtener_ultimo_ingreso(dni)
 
 def abrir_gestionar_rutina():
     """Abre la ventana para crear, editar o eliminar rutinas y ejercicios propios."""
@@ -82,7 +84,6 @@ def abrir_gestionar_rutina():
 def abrir_realizar_rutina():
     """Abre la ventana de Empezar Rutina (para entrenar y registrar series)."""
     if app.usuario_actual:
-        # Abre la pantalla para empezar a entrenar
         gui.VentanaComenzarEntrenar(
             app, app.usuario_actual.dni,
             fn_obtener_rutinas, fn_obtener_dias, fn_registrar_serie,
@@ -115,7 +116,7 @@ def abrir_informacion_personal():
 if __name__ == "__main__":
     if conexion:
         # Iniciamos la aplicación gráfica vinculando las funciones y el registro de acciones txt
-        app = gui.App(fn_login, fn_registro, fn_actualizar_usuario, fn_registrar_accion)
+        app = gui.App(fn_login, fn_registro, fn_actualizar_usuario, fn_registrar_accion, fn_ultimo_ingreso)
         app.abrir_gestionar_rutina_cmd = abrir_gestionar_rutina
         app.abrir_realizar_rutina_cmd = abrir_realizar_rutina
         app.abrir_ver_seguimiento_cmd = abrir_ver_seguimiento

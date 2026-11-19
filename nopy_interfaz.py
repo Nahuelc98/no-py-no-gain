@@ -30,20 +30,17 @@ naranja = "#F39C12"
 naranja_hover = "#F5B942"           
 gris = "#555555"                    
 gris_hover = "#777777"              
-violeta = "#8E44AD"                 
-violeta_hover = "#A569BD"           
 amarillo_oscuro = "#8A7419"         
 amarillo_oscuro_hover = "#A88E22"   
 
 def habilitar_scroll_fluido(ventana, scrollable_frame):
     """
-    Vincula recursivamente el evento de la rueda del ratón en todos los widgets hijos
-    de un contenedor con scroll. De este modo, aunque el usuario tenga el cursor sobre
-    un texto, botón o marco secundario, el scroll se ejecuta de forma suave y sin trabas.
+    Hace que la rueda del mouse mueva la pantalla aunque el cursor esté sobre
+    un texto, un botón u otro elemento de la pantalla.
     """
     def _desplazar(event):
         try:
-            # Si el puntero está sobre un Textbox interno, dejamos que actúe su propio scroll
+            # Si el mouse está sobre un cuadro de texto, dejamos que ese cuadro use su propio scroll
             if hasattr(event, "widget") and (str(event.widget).endswith("text") or event.widget.winfo_class() == "Text"):
                 return
             delta = int(-1 * (event.delta / 120)) if event.delta else 0
@@ -79,7 +76,7 @@ def habilitar_scroll_fluido(ventana, scrollable_frame):
 
     # Vinculamos los widgets actuales
     _vincular_recursivo(scrollable_frame)
-    # Pasada adicional para widgets que tarden unos milisegundos en inicializarse
+    # Lo repetimos un momento después para los elementos que tardan en aparecer
     ventana.after(150, lambda: _vincular_recursivo(scrollable_frame))
 
 
@@ -147,7 +144,7 @@ def crear_encabezado(contenedor, titulo, comando_volver, tamaño_letra=20, pady=
 
 # Todas las clases "Ventana..." son paneles (CTkFrame) que se muestran dentro
 # de la ventana principal, así toda la aplicación funciona en una sola ventana.
-# winfo_toplevel() devuelve la ventana principal (App) a la que pertenece el parent.
+# winfo_toplevel() devuelve la ventana principal (App) a la que pertenece esta pantalla.
 
 class VentanaGestionarRutinas(ctk.CTkFrame):
     """
@@ -259,7 +256,7 @@ class VentanaCrearRutina(ctk.CTkFrame):
         self.combo_cantidad_dias.set("3")
         self.combo_cantidad_dias.pack(side="left", padx=5)
 
-        # Selector de Día Activo dinámico
+        # Lista para elegir qué día de la rutina estamos armando
         frame_selector_dia = ctk.CTkFrame(self.scroll_frame, fg_color="transparent")
         frame_selector_dia.pack(pady=5)
         ctk.CTkLabel(frame_selector_dia, text="Configurando:").pack(side="left", padx=5)
@@ -330,7 +327,7 @@ class VentanaCrearRutina(ctk.CTkFrame):
 
         self.actualizar_ejercicios_disponibles(GRUPOS_MUSCULARES[0])
 
-        # Vinculamos scroll fluido en toda la superficie
+        # Hacemos que la rueda del mouse funcione en toda la pantalla
         habilitar_scroll_fluido(self, self.scroll_frame)
 
         # Mostramos esta pantalla dentro de la ventana principal
@@ -1003,7 +1000,7 @@ class VentanaComenzarEntrenar(ctk.CTkFrame):
         if lista_rutinas and lista_rutinas[0] != "Sin Rutinas":
             self.cargar_dias_rutina(lista_rutinas[0])
 
-        # Vinculamos scroll fluido en toda la superficie
+        # Hacemos que la rueda del mouse funcione en toda la pantalla
         habilitar_scroll_fluido(self, scroll_c)
 
         # Mostramos esta pantalla dentro de la ventana principal
@@ -1256,9 +1253,9 @@ class VentanaVerSeguimiento(ctk.CTkFrame):
     Incluye:
     1. Calendario interactivo con formato semanal (L M M J V S D) y navegación de meses.
     2. Selección de Fecha 1 y Fecha 2.
-    3. Visualización de los entrenamientos de ambas fechas.
-    4. Comparativa de rendimiento entre Fecha 1 y Fecha 2.
-    5. Análisis inteligente con IA (Gemini) sobre estadísticas, puntos fuertes, débiles y consejos.
+    3. Ver los ejercicios de cada fecha.
+    4. Comparar el rendimiento entre la Fecha 1 y la Fecha 2.
+    5. Análisis con IA (Gemini): conclusiones, puntos fuertes, puntos débiles y consejos.
     """
     def __init__(self, parent, dni_usuario, fn_obtener_seguimiento, fn_obtener_fechas_entrenadas=None, fn_obtener_registros_fecha=None, fn_analizar_ia=None, nombre_usuario="Atleta", fn_obtener_dias_por_fecha=None, fn_obtener_grupos_por_fecha=None):
         app = parent.winfo_toplevel()
@@ -1374,7 +1371,7 @@ class VentanaVerSeguimiento(ctk.CTkFrame):
             fg_color=amarillo, hover_color=amarillo_hover, text_color="black", font=("Arial", 12, "bold"), width=160
         ).pack(side="left", padx=4)
 
-        # SECCIÓN 2: CARDS DE FECHA 1 Y FECHA 2 (una debajo de la otra para que entren en la ventana)
+        # SECCIÓN 2: TARJETAS DE FECHA 1 Y FECHA 2 (una debajo de la otra para que entren en la ventana)
         frame_cards = ctk.CTkFrame(self.scroll_c, fg_color="transparent")
         frame_cards.pack(pady=8, padx=5, fill="x")
 
@@ -1416,7 +1413,7 @@ class VentanaVerSeguimiento(ctk.CTkFrame):
         solo_lectura(self.txt_ia)  # el usuario no puede modificar el texto
         self.txt_ia.pack(pady=5)
 
-        # Vinculamos scroll fluido en toda la superficie
+        # Hacemos que la rueda del mouse funcione en toda la pantalla
         habilitar_scroll_fluido(self, self.scroll_c)
 
         # Mostramos esta pantalla dentro de la ventana principal
@@ -1747,7 +1744,7 @@ class VentanaInformacionPersonal(ctk.CTkFrame):
         self.app = app
         self.usuario_actual = usuario_actual
         self.fn_actualizar_usuario = fn_actualizar_usuario
-        # Guardamos el callback para avisarle a la ventana principal cuando se guarden cambios
+        # Guardamos la función que avisa a la ventana principal cuando se guarden cambios
         self.fn_callback_actualizar = fn_callback_actualizar
 
         # Encabezado: botón '◀ Volver' a la izquierda y el título de la sección
@@ -1818,7 +1815,7 @@ class VentanaInformacionPersonal(ctk.CTkFrame):
 
 
 class App(ctk.CTk):
-    def __init__(self, fn_login, fn_registro, fn_actualizar_usuario=None, fn_registrar_accion=None):
+    def __init__(self, fn_login, fn_registro, fn_actualizar_usuario=None, fn_registrar_accion=None, fn_ultimo_ingreso=None):
         super().__init__()
         self.title("NO PY, NO GAIN")
         self.geometry("420x680")
@@ -1828,6 +1825,9 @@ class App(ctk.CTk):
         self.fn_registro = fn_registro
         self.fn_actualizar_usuario = fn_actualizar_usuario
         self.fn_registrar_accion = fn_registrar_accion
+        # Función que lee el archivo txt para saber cuándo fue el último ingreso del usuario
+        self.fn_ultimo_ingreso = fn_ultimo_ingreso
+        self.ultimo_ingreso = None
         self.usuario_actual = None
 
         # Lista de pantallas abiertas dentro de la ventana (la última es la que se ve).
@@ -1946,6 +1946,9 @@ class App(ctk.CTk):
         u = self.fn_login(dni)
         if u:
             self.usuario_actual = u
+            # Leemos el último ingreso ANTES de registrar el ingreso actual en el txt
+            if self.fn_ultimo_ingreso:
+                self.ultimo_ingreso = self.fn_ultimo_ingreso(u.dni)
             if self.fn_registrar_accion:
                 self.fn_registrar_accion("INICIÓ SESIÓN", u.dni, u.nombre_completo())
             self.habilitar_menu()
@@ -2084,9 +2087,16 @@ class App(ctk.CTk):
         ).pack(pady=5)
 
         ctk.CTkButton(
-            self.frame_menu, text="Cerrar Sesión", command=self.cerrar_sesion, 
+            self.frame_menu, text="Cerrar Sesión", command=self.cerrar_sesion,
             width=280, height=45, font=("Arial", 13, "bold"), fg_color=rojo, hover_color=rojo_hover
         ).pack(pady=5)
+
+        # Último ingreso del usuario (leído del archivo accion_usuario.txt)
+        if self.ultimo_ingreso:
+            texto_ingreso = f"Último ingreso: {self.ultimo_ingreso}"
+        else:
+            texto_ingreso = "Último ingreso: es tu primer ingreso"
+        ctk.CTkLabel(self.frame_menu, text=texto_ingreso, font=("Arial", 11), text_color="#A0A0A0").pack(pady=(10, 0))
 
     def cerrar_sesion(self):
         if self.fn_registrar_accion and self.usuario_actual:
@@ -2099,7 +2109,7 @@ class App(ctk.CTk):
             self.frame_bienvenida.destroy()
             self.frame_bienvenida = None
         self.ent_dni.delete(0, "end")
-        # Volvemos a mostrar el slogan y la caja de login anclados tras el logo
+        # Volvemos a mostrar el slogan y la caja de login debajo del logo
         self.frame_slogan.pack(after=self.label_titulo, pady=(4, 10))
         self.frame_login.pack(after=self.frame_slogan, pady=10, padx=20, fill="both")
         # Volvemos a mostrar la etiqueta de avisos (vacía) debajo del login

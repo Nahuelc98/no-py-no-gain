@@ -1,6 +1,6 @@
 """
 Módulo de Clases (POO) para 'No py, no gain'
-Define las entidades principales del sistema alineadas con la base de datos.
+Define las clases principales del sistema, que se corresponden con las tablas de la base de datos.
 """
 
 class Usuario:
@@ -68,7 +68,7 @@ class Rutina:
 
 
 class RegistroEntrenamiento:
-    """Clase para modelar el rendimiento y sobrecarga progresiva en cada serie."""
+    """Clase que representa una serie registrada (fecha, ejercicio, peso y repeticiones)."""
     def __init__(self, id_registro, dni_usuario, id_ejercicio, fecha, serie_numero, peso_kg, repeticiones):
         self.id_registro = id_registro
         self.dni_usuario = dni_usuario

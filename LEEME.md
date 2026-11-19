@@ -60,7 +60,7 @@ Una vez adentro, el menú tiene cinco botones:
 4. **Mi Perfil:** ves y editás tus datos (nombre, peso, altura, sexo) y tu IMC.
 5. **Cerrar Sesión:** volvés a la pantalla de inicio.
 
-Cada vez que alguien inicia sesión, cierra sesión o se registra, queda anotado en `accion_usuario.txt`.
+Cada vez que alguien inicia sesión, cierra sesión o se registra, queda anotado en `accion_usuario.txt`. La app lee ese archivo para mostrarte, debajo de **Cerrar Sesión**, la fecha y hora de tu último ingreso (la primera vez dice "es tu primer ingreso").
 
 ---
 
